@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>내 레시피북</title>
+    <title>유튜브 레시피 북마크</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
-    <meta name="description" content="유튜브 쇼츠에서 발견한 맛있는 레시피들을 모아보세요">
+    <meta name="description" content="유튜브 쇼츠 레시피를 간편하게 저장하고 검색하세요">
     <link rel="icon" href="icon-192x192.png">
     <link rel="apple-touch-icon" href="icon-192x192.png">
     <style>
@@ -24,10 +24,10 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(15px);
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             overflow: hidden;
@@ -56,14 +56,76 @@
             padding: 30px;
         }
         
-        .search-section {
+        .add-section {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 15px;
+            padding: 30px;
             margin-bottom: 40px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .url-input-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .url-input {
+            width: 100%;
+            padding: 15px 120px 15px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .url-input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .add-btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .add-btn:hover {
+            transform: translateY(-50%) translateY(-2px);
+            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+        }
+        
+        .add-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: translateY(-50%);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            color: #6b7280;
+            margin-top: 10px;
+        }
+        
+        .search-section {
+            margin-bottom: 30px;
         }
         
         .search-container {
             position: relative;
             max-width: 600px;
-            margin: 0 auto 20px;
+            margin: 0 auto;
         }
         
         .search-input {
@@ -87,133 +149,19 @@
             top: 50%;
             transform: translateY(-50%);
             color: #6b7280;
-        }
-        
-        .filter-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        
-        .filter-tag {
-            padding: 8px 16px;
-            background: #f3f4f6;
-            border: 1px solid #d1d5db;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-        }
-        
-        .filter-tag:hover, .filter-tag.active {
-            background: #2563eb;
-            color: white;
-            border-color: #2563eb;
-        }
-        
-        .recipe-form {
-            background: #f8fafc;
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 40px;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #374151;
-        }
-        
-        .form-input, .form-textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
-        }
-        
-        .form-input:focus, .form-textarea:focus {
-            outline: none;
-            border-color: #2563eb;
-        }
-        
-        .form-textarea {
-            height: 120px;
-            resize: vertical;
-        }
-        
-        .tag-input-container {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        .tag-input {
-            flex: 1;
-        }
-        
-        .add-tag-btn, .add-recipe-btn {
-            padding: 12px 24px;
-            background: #2563eb;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            font-size: 16px;
-        }
-        
-        .add-tag-btn:hover, .add-recipe-btn:hover {
-            background: #1d4ed8;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
-        }
-        
-        .current-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        
-        .current-tag {
-            background: #dbeafe;
-            color: #1e40af;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .remove-tag {
-            cursor: pointer;
-            color: #ef4444;
-            font-weight: bold;
+            font-size: 18px;
         }
         
         .recipes-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
+            gap: 20px;
         }
         
         .recipe-card {
             background: white;
             border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             transition: all 0.3s ease;
             border: 1px solid #e5e7eb;
@@ -222,124 +170,149 @@
         
         .recipe-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
         }
         
-        .recipe-header {
-            padding: 20px;
-            border-bottom: 1px solid #f3f4f6;
-        }
-        
-        .recipe-title-section {
+        .recipe-thumbnail {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 15px;
-        }
-        
-        .recipe-title {
-            font-size: 1.3em;
-            font-weight: 700;
-            color: #1f2937;
-            margin: 0;
-            flex: 1;
-            line-height: 1.3;
-        }
-        
-        .youtube-link-container {
-            flex-shrink: 0;
-        }
-        
-        .youtube-link {
-            background: linear-gradient(135deg, #ff0000, #cc0000);
-            color: white;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 8px 12px;
-            border-radius: 20px;
-            display: inline-flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            font-size: 48px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .recipe-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 0, 0, 0.9);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(255, 0, 0, 0.2);
         }
         
-        .youtube-link:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(255, 0, 0, 0.3);
-            background: linear-gradient(135deg, #ff1a1a, #e60000);
-        }
-        
-        .youtube-icon {
-            font-size: 14px;
+        .play-overlay:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            background: rgba(255, 0, 0, 1);
         }
         
         .recipe-content {
             padding: 20px;
         }
         
-        .recipe-ingredients, .recipe-steps {
+        .recipe-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .recipe-date {
+            color: #6b7280;
+            font-size: 14px;
             margin-bottom: 15px;
         }
         
-        .recipe-ingredients h4, .recipe-steps h4 {
-            color: #374151;
-            margin-bottom: 8px;
-            font-size: 1em;
-        }
-        
-        .recipe-ingredients ul, .recipe-steps ol {
-            padding-left: 20px;
-            color: #6b7280;
-            line-height: 1.6;
-        }
-        
-        .recipe-tags {
+        .recipe-actions {
             display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 15px;
+            gap: 10px;
+            align-items: center;
         }
         
-        .recipe-tag {
-            background: #f0f9ff;
-            color: #0369a1;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        
-        .delete-recipe {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #ef4444;
+        .watch-btn {
+            flex: 1;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
             color: white;
+            padding: 12px 16px;
             border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
+            border-radius: 8px;
             cursor: pointer;
-            display: flex;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
-            opacity: 0.8;
+            gap: 8px;
             transition: all 0.3s ease;
         }
         
-        .delete-recipe:hover {
-            opacity: 1;
-            transform: scale(1.1);
+        .watch-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
         }
         
-        .no-recipes {
+        .delete-btn {
+            background: #f3f4f6;
+            color: #6b7280;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .delete-btn:hover {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .no-results {
             text-align: center;
             padding: 60px 20px;
             color: #6b7280;
             font-size: 1.1em;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2563eb;
+            display: block;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9em;
         }
         
         .install-prompt {
@@ -384,29 +357,42 @@
                 padding: 20px;
             }
             
-            .recipe-form {
+            .add-section {
                 padding: 20px;
+            }
+            
+            .url-input {
+                padding: 15px 15px 15px 20px;
+                margin-bottom: 10px;
+            }
+            
+            .add-btn {
+                position: static;
+                transform: none;
+                width: 100%;
+            }
+            
+            .add-btn:hover {
+                transform: translateY(-2px);
             }
             
             .recipes-grid {
                 grid-template-columns: 1fr;
             }
             
-            .tag-input-container {
+            .stats {
                 flex-direction: column;
-                align-items: stretch;
+                gap: 15px;
             }
             
-            .recipe-title-section {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
+            .stat-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
             }
             
-            .youtube-link {
-                align-self: flex-end;
-                font-size: 12px;
-                padding: 6px 10px;
+            .stat-number {
+                font-size: 1.5em;
             }
         }
     </style>
@@ -414,8 +400,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🍳 내 레시피북</h1>
-            <p>유튜브 쇼츠에서 발견한 맛있는 레시피들을 모아보세요</p>
+            <h1>🍳 유튜브 레시피 북마크</h1>
+            <p>유튜브 쇼츠 레시피를 간편하게 저장하고 검색하세요</p>
         </div>
         
         <div class="main-content">
@@ -428,98 +414,82 @@
                 <button id="install-btn" class="install-btn">설치하기</button>
             </div>
             
-            <!-- 검색 섹션 -->
-            <div class="search-section">
-                <div class="search-container">
-                    <input type="text" id="search-input" class="search-input" placeholder="레시피 이름이나 재료로 검색하세요...">
-                    <span class="search-icon">🔍</span>
+            <!-- 통계 -->
+            <div class="stats">
+                <div class="stat-item">
+                    <span id="total-count" class="stat-number">0</span>
+                    <span class="stat-label">저장된 레시피</span>
                 </div>
-                
-                <div class="filter-tags" id="filter-tags">
-                    <span class="filter-tag active" data-tag="all">전체</span>
+                <div class="stat-item">
+                    <span id="today-count" class="stat-number">0</span>
+                    <span class="stat-label">오늘 추가</span>
                 </div>
             </div>
             
-            <!-- 레시피 추가 폼 -->
-            <div class="recipe-form">
-                <h3 style="margin-bottom: 20px; color: #374151;">새 레시피 추가</h3>
-                <form id="recipe-form">
-                    <div class="form-group">
-                        <label class="form-label" for="recipe-title">레시피 제목 *</label>
-                        <input type="text" id="recipe-title" class="form-input" placeholder="예: 간단한 김치볶음밥" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="youtube-url">유튜브 쇼츠 링크</label>
-                        <input type="url" id="youtube-url" class="form-input" placeholder="https://youtube.com/shorts/...">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="ingredients">재료 (한 줄에 하나씩)</label>
-                        <textarea id="ingredients" class="form-textarea" placeholder="김치 200g&#10;밥 2공기&#10;돼지고기 100g&#10;참기름 1큰술"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="steps">조리 과정 (한 줄에 하나씩)</label>
-                        <textarea id="steps" class="form-textarea" placeholder="1. 김치와 돼지고기를 먼저 볶아주세요&#10;2. 밥을 넣고 함께 볶아주세요&#10;3. 참기름을 넣고 마무리하세요"></textarea>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">태그</label>
-                        <div class="tag-input-container">
-                            <input type="text" id="tag-input" class="form-input tag-input" placeholder="예: 한식, 간단요리, 볶음">
-                            <button type="button" id="add-tag-btn" class="add-tag-btn">추가</button>
-                        </div>
-                        <div id="current-tags" class="current-tags"></div>
-                    </div>
-                    
-                    <button type="submit" class="add-recipe-btn">레시피 저장</button>
-                </form>
+            <!-- 레시피 추가 섹션 -->
+            <div class="add-section">
+                <h3 style="margin-bottom: 15px; color: #374151;">🔗 유튜브 링크 추가</h3>
+                <div class="url-input-container">
+                    <input 
+                        type="url" 
+                        id="youtube-url" 
+                        class="url-input" 
+                        placeholder="https://youtube.com/shorts/... 또는 https://youtu.be/..."
+                    >
+                    <button id="add-btn" class="add-btn">추가</button>
+                </div>
+                <div id="loading" class="loading">
+                    ⏳ 제목을 가져오는 중...
+                </div>
+            </div>
+            
+            <!-- 검색 섹션 -->
+            <div class="search-section">
+                <div class="search-container">
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        class="search-input" 
+                        placeholder="레시피 제목으로 검색하세요... (예: 김치, 볶음, 전자렌지)"
+                    >
+                    <span class="search-icon">🔍</span>
+                </div>
             </div>
             
             <!-- 레시피 목록 -->
             <div id="recipes-container">
                 <div id="recipes-grid" class="recipes-grid"></div>
-                <div id="no-recipes" class="no-recipes" style="display: none;">
+                <div id="no-results" class="no-results" style="display: none;">
                     아직 저장된 레시피가 없습니다.<br>
-                    위 폼을 사용해서 첫 번째 레시피를 추가해보세요! 🍽️
+                    위에서 유튜브 링크를 추가해보세요! 🎬
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        class RecipeBookApp {
+        class YouTubeRecipeApp {
             constructor() {
                 this.recipes = this.loadRecipes();
-                this.currentTags = [];
-                this.allTags = new Set();
                 this.init();
             }
             
             init() {
                 this.setupEventListeners();
-                this.updateTagFilters();
                 this.renderRecipes();
+                this.updateStats();
                 this.setupPWA();
             }
             
             setupEventListeners() {
-                // 폼 제출
-                document.getElementById('recipe-form').addEventListener('submit', (e) => {
-                    e.preventDefault();
+                // URL 추가
+                document.getElementById('add-btn').addEventListener('click', () => {
                     this.addRecipe();
                 });
                 
-                // 태그 추가
-                document.getElementById('add-tag-btn').addEventListener('click', () => {
-                    this.addTag();
-                });
-                
-                document.getElementById('tag-input').addEventListener('keypress', (e) => {
+                document.getElementById('youtube-url').addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
-                        e.preventDefault();
-                        this.addTag();
+                        this.addRecipe();
                     }
                 });
                 
@@ -527,120 +497,111 @@
                 document.getElementById('search-input').addEventListener('input', (e) => {
                     this.searchRecipes(e.target.value);
                 });
+            }
+            
+            async addRecipe() {
+                const urlInput = document.getElementById('youtube-url');
+                const addBtn = document.getElementById('add-btn');
+                const loading = document.getElementById('loading');
+                const url = urlInput.value.trim();
                 
-                // 필터 태그 클릭
-                document.getElementById('filter-tags').addEventListener('click', (e) => {
-                    if (e.target.classList.contains('filter-tag')) {
-                        this.toggleFilter(e.target.dataset.tag);
-                    }
-                });
-            }
-            
-            addTag() {
-                const input = document.getElementById('tag-input');
-                const tag = input.value.trim();
-                
-                if (tag && !this.currentTags.includes(tag)) {
-                    this.currentTags.push(tag);
-                    this.renderCurrentTags();
-                    input.value = '';
-                }
-            }
-            
-            removeTag(tag) {
-                this.currentTags = this.currentTags.filter(t => t !== tag);
-                this.renderCurrentTags();
-            }
-            
-            renderCurrentTags() {
-                const container = document.getElementById('current-tags');
-                container.innerHTML = this.currentTags.map(tag => `
-                    <span class="current-tag">
-                        ${tag}
-                        <span class="remove-tag" onclick="app.removeTag('${tag}')">&times;</span>
-                    </span>
-                `).join('');
-            }
-            
-            addRecipe() {
-                const title = document.getElementById('recipe-title').value.trim();
-                const youtubeUrl = document.getElementById('youtube-url').value.trim();
-                const ingredients = document.getElementById('ingredients').value.trim();
-                const steps = document.getElementById('steps').value.trim();
-                
-                if (!title) {
-                    alert('레시피 제목은 필수입니다.');
+                if (!url) {
+                    alert('유튜브 링크를 입력해주세요.');
                     return;
                 }
                 
-                const recipe = {
-                    id: Date.now().toString(),
-                    title,
-                    youtubeUrl,
-                    ingredients: ingredients ? ingredients.split('\n').filter(i => i.trim()) : [],
-                    steps: steps ? steps.split('\n').filter(s => s.trim()) : [],
-                    tags: [...this.currentTags],
-                    createdAt: new Date().toISOString()
-                };
+                if (!this.isValidYouTubeUrl(url)) {
+                    alert('올바른 유튜브 링크가 아닙니다.');
+                    return;
+                }
                 
-                this.recipes.push(recipe);
-                this.saveRecipes();
-                this.updateTagFilters();
-                this.renderRecipes();
-                this.resetForm();
+                // 중복 체크
+                if (this.recipes.some(recipe => recipe.url === url)) {
+                    alert('이미 저장된 레시피입니다.');
+                    return;
+                }
                 
-                alert('레시피가 성공적으로 추가되었습니다! 🎉');
+                // UI 업데이트
+                addBtn.disabled = true;
+                loading.style.display = 'block';
+                
+                try {
+                    const title = await this.extractTitle(url);
+                    const videoId = this.extractVideoId(url);
+                    const thumbnail = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+                    
+                    const recipe = {
+                        id: Date.now().toString(),
+                        title: title || '제목을 가져올 수 없습니다',
+                        url: url,
+                        thumbnail: thumbnail,
+                        createdAt: new Date().toISOString()
+                    };
+                    
+                    this.recipes.unshift(recipe);
+                    this.saveRecipes();
+                    this.renderRecipes();
+                    this.updateStats();
+                    
+                    urlInput.value = '';
+                    alert('레시피가 저장되었습니다! 🎉');
+                    
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('제목을 가져오는데 실패했습니다. 다시 시도해주세요.');
+                } finally {
+                    addBtn.disabled = false;
+                    loading.style.display = 'none';
+                }
             }
             
-            resetForm() {
-                document.getElementById('recipe-form').reset();
-                this.currentTags = [];
-                this.renderCurrentTags();
+            isValidYouTubeUrl(url) {
+                const patterns = [
+                    /^https?:\/\/(www\.)?youtube\.com\/shorts\/[\w-]+/,
+                    /^https?:\/\/(www\.)?youtube\.com\/watch\?v=[\w-]+/,
+                    /^https?:\/\/youtu\.be\/[\w-]+/
+                ];
+                return patterns.some(pattern => pattern.test(url));
+            }
+            
+            extractVideoId(url) {
+                const patterns = [
+                    /(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/,
+                    /(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]+)/,
+                    /(?:youtu\.be\/)([a-zA-Z0-9_-]+)/
+                ];
+                
+                for (let pattern of patterns) {
+                    const match = url.match(pattern);
+                    if (match) return match[1];
+                }
+                return null;
+            }
+            
+            async extractTitle(url) {
+                try {
+                    // YouTube oEmbed API 사용
+                    const videoId = this.extractVideoId(url);
+                    if (!videoId) throw new Error('Invalid video ID');
+                    
+                    const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+                    if (!response.ok) throw new Error('Failed to fetch');
+                    
+                    const data = await response.json();
+                    return data.title;
+                } catch (error) {
+                    // 폴백: 간단한 제목 생성
+                    const videoId = this.extractVideoId(url);
+                    return `유튜브 레시피 (${videoId})`;
+                }
             }
             
             deleteRecipe(id) {
                 if (confirm('정말 이 레시피를 삭제하시겠습니까?')) {
                     this.recipes = this.recipes.filter(recipe => recipe.id !== id);
                     this.saveRecipes();
-                    this.updateTagFilters();
                     this.renderRecipes();
-                }
-            }
-            
-            updateTagFilters() {
-                this.allTags.clear();
-                this.recipes.forEach(recipe => {
-                    recipe.tags.forEach(tag => this.allTags.add(tag));
-                });
-                
-                const filterContainer = document.getElementById('filter-tags');
-                const allButton = filterContainer.querySelector('[data-tag="all"]');
-                
-                // 기존 태그 필터 제거 (전체 버튼 제외)
-                filterContainer.querySelectorAll('.filter-tag:not([data-tag="all"])').forEach(el => el.remove());
-                
-                // 새 태그 필터 추가
-                Array.from(this.allTags).sort().forEach(tag => {
-                    const tagElement = document.createElement('span');
-                    tagElement.className = 'filter-tag';
-                    tagElement.dataset.tag = tag;
-                    tagElement.textContent = tag;
-                    filterContainer.appendChild(tagElement);
-                });
-            }
-            
-            toggleFilter(tag) {
-                const filterElements = document.querySelectorAll('.filter-tag');
-                
-                if (tag === 'all') {
-                    filterElements.forEach(el => el.classList.remove('active'));
-                    document.querySelector('[data-tag="all"]').classList.add('active');
-                    this.renderRecipes();
-                } else {
-                    document.querySelector('[data-tag="all"]').classList.remove('active');
-                    const element = document.querySelector(`[data-tag="${tag}"]`);
-                    element.classList.toggle('active');
-                    this.renderRecipes();
+                    this.updateStats();
                 }
             }
             
@@ -649,95 +610,76 @@
             }
             
             renderRecipes(searchQuery = '') {
-                const activeFilters = Array.from(document.querySelectorAll('.filter-tag.active:not([data-tag="all"])'))
-                    .map(el => el.dataset.tag);
-                
                 let filteredRecipes = this.recipes;
                 
-                // 태그 필터링
-                if (activeFilters.length > 0) {
-                    filteredRecipes = filteredRecipes.filter(recipe => 
-                        activeFilters.some(filter => recipe.tags.includes(filter))
-                    );
-                }
-                
-                // 검색 필터링
                 if (searchQuery) {
                     const query = searchQuery.toLowerCase();
-                    filteredRecipes = filteredRecipes.filter(recipe => 
-                        recipe.title.toLowerCase().includes(query) ||
-                        recipe.ingredients.some(ingredient => 
-                            ingredient.toLowerCase().includes(query)
-                        ) ||
-                        recipe.tags.some(tag => 
-                            tag.toLowerCase().includes(query)
-                        )
+                    filteredRecipes = this.recipes.filter(recipe => 
+                        recipe.title.toLowerCase().includes(query)
                     );
                 }
                 
                 const container = document.getElementById('recipes-grid');
-                const noRecipes = document.getElementById('no-recipes');
+                const noResults = document.getElementById('no-results');
                 
                 if (filteredRecipes.length === 0) {
                     container.style.display = 'none';
-                    noRecipes.style.display = 'block';
-                    noRecipes.textContent = searchQuery || activeFilters.length > 0 
-                        ? '검색 조건에 맞는 레시피가 없습니다.' 
-                        : '아직 저장된 레시피가 없습니다.\n위 폼을 사용해서 첫 번째 레시피를 추가해보세요! 🍽️';
+                    noResults.style.display = 'block';
+                    noResults.innerHTML = searchQuery 
+                        ? `"${searchQuery}"에 대한 검색 결과가 없습니다.<br>다른 키워드로 검색해보세요.`
+                        : '아직 저장된 레시피가 없습니다.<br>위에서 유튜브 링크를 추가해보세요! 🎬';
                 } else {
                     container.style.display = 'grid';
-                    noRecipes.style.display = 'none';
+                    noResults.style.display = 'none';
                     
-                    container.innerHTML = filteredRecipes.map(recipe => this.createRecipeCard(recipe)).join('');
+                    container.innerHTML = filteredRecipes.map(recipe => 
+                        this.createRecipeCard(recipe)
+                    ).join('');
                 }
             }
             
             createRecipeCard(recipe) {
-                const youtubeLink = recipe.youtubeUrl ? 
-                    `<div class="youtube-link-container">
-                        <a href="${recipe.youtubeUrl}" target="_blank" class="youtube-link">
-                            <span class="youtube-icon">🎬</span>
-                            유튜브에서 보기
-                        </a>
-                    </div>` : '';
+                const date = new Date(recipe.createdAt).toLocaleDateString('ko-KR');
                 
                 return `
                     <div class="recipe-card">
-                        <button class="delete-recipe" onclick="app.deleteRecipe('${recipe.id}')">&times;</button>
-                        <div class="recipe-header">
-                            <div class="recipe-title-section">
-                                <h3 class="recipe-title">${recipe.title}</h3>
-                                ${youtubeLink}
+                        <div class="recipe-thumbnail">
+                            <img src="${recipe.thumbnail}" alt="${recipe.title}" 
+                                 onerror="this.style.display='none'; this.parentElement.innerHTML='🍳';">
+                            <div class="play-overlay" onclick="window.open('${recipe.url}', '_blank')">
+                                ▶
                             </div>
                         </div>
                         <div class="recipe-content">
-                            ${recipe.ingredients.length > 0 ? `
-                                <div class="recipe-ingredients">
-                                    <h4>재료</h4>
-                                    <ul>
-                                        ${recipe.ingredients.map(ingredient => `<li>${ingredient}</li>`).join('')}
-                                    </ul>
-                                </div>
-                            ` : ''}
-                            ${recipe.steps.length > 0 ? `
-                                <div class="recipe-steps">
-                                    <h4>조리 과정</h4>
-                                    <ol>
-                                        ${recipe.steps.map(step => `<li>${step}</li>`).join('')}
-                                    </ol>
-                                </div>
-                            ` : ''}
-                            <div class="recipe-tags">
-                                ${recipe.tags.map(tag => `<span class="recipe-tag">${tag}</span>`).join('')}
+                            <h3 class="recipe-title" title="${recipe.title}">${recipe.title}</h3>
+                            <div class="recipe-date">저장일: ${date}</div>
+                            <div class="recipe-actions">
+                                <a href="${recipe.url}" target="_blank" class="watch-btn">
+                                    🎬 시청하기
+                                </a>
+                                <button class="delete-btn" onclick="app.deleteRecipe('${recipe.id}')" title="삭제">
+                                    🗑️
+                                </button>
                             </div>
                         </div>
                     </div>
                 `;
             }
             
+            updateStats() {
+                const total = this.recipes.length;
+                const today = new Date().toDateString();
+                const todayCount = this.recipes.filter(recipe => 
+                    new Date(recipe.createdAt).toDateString() === today
+                ).length;
+                
+                document.getElementById('total-count').textContent = total;
+                document.getElementById('today-count').textContent = todayCount;
+            }
+            
             loadRecipes() {
                 try {
-                    const stored = localStorage.getItem('recipeBook');
+                    const stored = localStorage.getItem('youtubeRecipes');
                     return stored ? JSON.parse(stored) : [];
                 } catch {
                     return [];
@@ -746,9 +688,9 @@
             
             saveRecipes() {
                 try {
-                    localStorage.setItem('recipeBook', JSON.stringify(this.recipes));
+                    localStorage.setItem('youtubeRecipes', JSON.stringify(this.recipes));
                 } catch (error) {
-                    console.error('레시피 저장 중 오류가 발생했습니다:', error);
+                    console.error('저장 중 오류가 발생했습니다:', error);
                 }
             }
             
@@ -792,7 +734,7 @@
         }
         
         // 앱 초기화
-        const app = new RecipeBookApp();
+        const app = new YouTubeRecipeApp();
     </script>
 </body>
 </html>
