@@ -1,7 +1,7 @@
 
 {
-  "name": "유튜브 레시피 북마크",
-  "short_name": "레시피북마크",
+  "name": "유튜브 레시피",
+  "short_name": "유튜브 레시피",
   "description": "유튜브 쇼츠 레시피를 간편하게 저장하고 검색하세요",
   "start_url": "./",
   "display": "standalone",

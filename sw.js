@@ -1,6 +1,6 @@
 
-// v1.0.3 - share target support + root icon paths
-const CACHE_NAME = 'youtube-recipe-bookmark-v1.0.3';
+// v1.0.4 - share target support + root icon paths + updated cache
+const CACHE_NAME = 'youtube-recipe-v1.0.4';
 const urlsToCache = [
   './',
   './index.html',
@@ -79,17 +79,4 @@ self.addEventListener('fetch', (event) => {
       });
     })
   );
-});
-
-self.addEventListener('push', (event) => {
-  if (!event.data) return;
-  const data = event.data.json();
-  const options = {
-    body: data.body || '새로운 레시피가 추가되었습니다!',
-    icon: './icon-192x192.png',
-    badge: './icon-72x72.png',
-    vibrate: [100, 50, 100],
-    data: { dateOfArrival: Date.now(), primaryKey: 1 }
-  };
-  event.waitUntil(self.registration.showNotification(data.title || '내 레시피북', options));
 });

@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>유튜브 레시피 북마크</title>
+  <title>유튜브 레시피</title>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#000000" />
   <meta name="description" content="유튜브 쇼츠 레시피를 간편하게 저장하고 검색하세요" />
@@ -34,13 +34,19 @@
     .tool-btn{background:#111827;color:#fff;border:none;border-radius:999px;padding:8px 12px;cursor:pointer;font-weight:800}
     .tool-btn.secondary{background:#e5e7eb;color:#111827}
     .tool-btn.toggled{box-shadow:inset 0 0 0 2px #111827}
-    .file-input{position:absolute;left:-9999px;}
+    .sort-select{border:2px solid #e5e7eb;border-radius:999px;padding:8px 12px;background:#fff;font-weight:800}
 
     .search-section{margin-bottom:10px}
     .search-container{position:relative;max-width:650px;margin:0 auto}
     .search-input{width:100%;padding:12px 48px 12px 14px;border:2px solid #e5e7eb;border-radius:50px;font-size:16px;transition:all .3s ease}
     .search-input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
     .clear-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:none;font-size:18px;cursor:pointer;color:#6b7280}
+
+    /* Tags bar */
+    .tags-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 12px}
+    .tag-chip{border:1px solid #e5e7eb;background:#fff;color:#374151;padding:6px 10px;border-radius:999px;cursor:pointer;font-weight:700;font-size:.9em}
+    .tag-chip.active{background:#111827;color:#fff;border-color:#111827}
+    .tag-chip .count{opacity:.6;margin-left:.25rem}
 
     /* Top viewed one-line bar */
     .top-viewed{margin:8px 0 16px;padding:10px 14px;background:rgba(255,255,255,.55);border-radius:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#374151;font-weight:700}
@@ -91,7 +97,7 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>🍳 유튜브 레시피 북마크</h1>
+      <h1>유튜브 레시피</h1>
       <p>주소 추가 → 검색 → 영상 클릭(모바일 최적 화면)</p>
     </div>
 
@@ -101,20 +107,25 @@
         <button id="install-btn" class="tool-btn">설치</button>
       </div>
 
-      <!-- Toolbar: favorites filter + backup/restore -->
+      <!-- Toolbar -->
       <div class="toolbar">
         <div class="left-tools">
           <button id="fav-filter" class="tool-btn secondary" aria-pressed="false">⭐ 즐겨찾기만</button>
-          <button id="export-btn" class="tool-btn secondary">백업(내보내기)</button>
-          <input id="import-file" class="file-input" type="file" accept="application/json" />
-          <button id="import-btn" class="tool-btn secondary">복원(가져오기)</button>
+          <select id="sort-select" class="sort-select" aria-label="정렬">
+            <option value="latest" selected>최신순</option>
+            <option value="most_viewed">자주본순</option>
+            <option value="favorites_first">즐겨찾기 우선</option>
+          </select>
         </div>
       </div>
+
+      <!-- Tags bar -->
+      <div id="tags-bar" class="tags-bar" aria-label="태그 필터"></div>
 
       <!-- Top 3 most viewed (one line, clickable, with counts) -->
       <div id="top-viewed" class="top-viewed" title=""></div>
 
-      <!-- 레시피 추가 섹션 -->
+      <!-- 레시피 추가 섹션 (항상 유지) -->
       <div id="add-section" class="add-section">
         <h3 style="margin-bottom:10px;color:#374151">🔗 유튜브 링크 추가</h3>
         <div class="url-input-container">
@@ -122,7 +133,7 @@
           <button id="add-btn" class="add-btn">추가</button>
         </div>
         <div id="loading" class="loading">⏳ 제목을 가져오는 중...</div>
-        <small style="color:#6b7280">주소를 입력/추가하면 이 입력 영역은 자동으로 숨겨집니다.</small>
+        <small style="color:#6b7280">주소 입력 후에도 입력창은 계속 보여집니다.</small>
       </div>
 
       <!-- 검색 섹션 -->
@@ -164,12 +175,17 @@
     class YouTubeRecipeApp{
       constructor(){
         this.recipes=this.loadRecipes();
+        // 마이그레이션: 기존 레시피에 tags 필드가 없으면 자동 생성
+        for(const r of this.recipes){ if(!Array.isArray(r.tags)) r.tags = this.autoTags(r.title||''); }
         this.current=null; // 현재 플레이 중인 recipe
         this.onlyFav=false;
+        this.sortMode='latest';
+        this.selectedTags=new Set();
         this.init();
       }
       init(){
         this.setupEventListeners();
+        this.renderTagsBar();
         this.renderRecipes();
         this.updateTopViewed();
         this.setupPWA();
@@ -212,17 +228,77 @@
           this.renderRecipes(searchInput.value);
         });
 
-        // Backup/Restore
-        document.getElementById('export-btn').addEventListener('click',()=>this.exportData());
-        const fileInput=document.getElementById('import-file');
-        document.getElementById('import-btn').addEventListener('click',()=>fileInput.click());
-        fileInput.addEventListener('change', (e)=>this.importData(e.target.files?.[0]));
+        // Sort select
+        const sortSel=document.getElementById('sort-select');
+        sortSel.addEventListener('change',(e)=>{
+          this.sortMode=e.target.value;
+          this.renderRecipes(searchInput.value);
+        });
 
         // Player view controls
         document.getElementById('pv-back').addEventListener('click',()=>this.closePlayer());
         document.getElementById('pv-open').addEventListener('click',()=>{ if(this.current) window.open(this.current.url,'_blank') });
         document.getElementById('pv-share').addEventListener('click',()=>this.shareCurrent());
       }
+
+      /* ========== 태그 ========== */
+      autoTags(title){
+        const t=(title||'').toLowerCase();
+        const tags=[];
+        const add=(x)=>{ if(!tags.includes(x)) tags.push(x); };
+        const has=(kw)=> t.includes(kw);
+        // 종류/조리법
+        if(/국|탕|찌개|라면|우동|수프/.test(title)) add('국물');
+        if(/볶음|볶다|stir|stir-fry|stir fry/.test(t)) add('볶음');
+        if(/찌다|찜|steam/.test(t)) add('찜');
+        if(/튀김|튀기|fry/.test(t)) add('튀김');
+        if(/구이|굽기|grill|oven/.test(t)) add('구이');
+        if(/전자레인지|전자렌지|microwave/.test(t)) add('전자레인지');
+        if(/에어프라이|에어프라|air ?fryer/.test(t)) add('에어프라이어');
+        if(/비건|채식|vegan|plant[- ]based/.test(t)) add('비건');
+        if(/초간단|간단|quick|easy|5분|5 min|5-minute/.test(t)) add('간단');
+        if(/매운|spicy|불닭|고추/.test(t)) add('매운맛');
+        // 재료
+        if(/김치/.test(title)) add('김치');
+        if(/돼지|삼겹|포크|pork/.test(t)) add('돼지고기');
+        if(/소고기|beef|안심|등심/.test(t)) add('소고기');
+        if(/닭|치킨|chicken/.test(t)) add('닭고기');
+        if(/계란|달걀|egg/.test(t)) add('계란');
+        if(/두부|tofu/.test(t)) add('두부');
+        if(/밥|덮밥|rice|비빔/.test(t)) add('밥');
+        if(/면|파스타|ramen|noodle|udon|spaghetti/.test(t)) add('면/파스타');
+        return tags;
+      }
+      buildTagsIndex(){
+        const index=new Map();
+        for(const r of this.recipes){
+          for(const tag of (r.tags||[])){
+            index.set(tag, (index.get(tag)||0)+1);
+          }
+        }
+        return index;
+      }
+      renderTagsBar(){
+        const bar=document.getElementById('tags-bar');
+        const idx=this.buildTagsIndex();
+        const tags=Array.from(idx.keys()).sort((a,b)=>a.localeCompare(b,'ko'));
+        bar.innerHTML = tags.map(tag=>{
+          const active=this.selectedTags.has(tag);
+          return `<button class="tag-chip ${active?'active':''}" data-tag="${tag}" aria-pressed="${active}">#${tag}<span class="count">(${idx.get(tag)})</span></button>`;
+        }).join('');
+        // bind
+        bar.querySelectorAll('.tag-chip').forEach(btn=>{
+          btn.addEventListener('click',()=>{
+            const t=btn.getAttribute('data-tag');
+            if(this.selectedTags.has(t)){ this.selectedTags.delete(t); }
+            else{ this.selectedTags.add(t); }
+            this.renderTagsBar();
+            this.renderRecipes(document.getElementById('search-input').value);
+          });
+        });
+      }
+
+      /* ========== 추가/삭제/즐겨찾기/검색/정렬/표시 ========== */
       async addRecipe(){
         const urlInput=document.getElementById('youtube-url');
         const addBtn=document.getElementById('add-btn');
@@ -231,20 +307,20 @@
         if(!url){alert('유튜브 링크를 입력해주세요.');return;}
         if(!this.isValidYouTubeUrl(url)){alert('올바른 유튜브 링크가 아닙니다.');return;}
         const newVid=this.extractVideoId(url);
-        if(this.recipes.some(r=>this.extractVideoId(r.url)===newVid)){alert('이미 저장된 레시피입니다.');this.hideAddSection();return;}
+        if(this.recipes.some(r=>this.extractVideoId(r.url)===newVid)){alert('이미 저장된 레시피입니다.');return;}
         addBtn.disabled=true;loading.style.display='block';
         try{
           const title=await this.extractTitle(url);
           const videoId=this.extractVideoId(url);
           const thumbnail=`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-          const recipe={id:Date.now().toString(),title:title||'제목을 가져올 수 없습니다',url,thumbnail,createdAt:new Date().toISOString(),views:0,favorite:false};
+          const tags=this.autoTags(title||'');
+          const recipe={id:Date.now().toString(),title:title||'제목을 가져올 수 없습니다',url,thumbnail,createdAt:new Date().toISOString(),views:0,favorite:false,tags};
           this.recipes.unshift(recipe);
           this.saveRecipes();
+          this.renderTagsBar();
           this.renderRecipes();
           this.updateTopViewed();
-          urlInput.value='';
-          this.hideAddSection();
-          alert('레시피가 저장되었습니다! 🎉 검색으로 찾아 보거나 바로 재생해보세요.');
+          urlInput.value=''; // 입력창 유지
         }catch(err){
           console.error(err);
           alert('제목을 가져오는데 실패했습니다. 다시 시도해주세요.');
@@ -253,12 +329,10 @@
         }
       }
       async handleSharedPayload(payload){
-        // Try to find a YouTube URL in payload (could be plain URL or text including URL)
         const match = (payload||'').match(/https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)[\w-]+/i);
         if(!match){ alert('공유된 내용에서 유튜브 링크를 찾지 못했습니다.'); return; }
         const url = match[0];
         if(this.recipes.some(r=>this.extractVideoId(r.url)===this.extractVideoId(url))){
-          // Open player for existing one
           const exist = this.recipes.find(r=>this.extractVideoId(r.url)===this.extractVideoId(url));
           if(exist){ this.openPlayer(exist.id); }
           location.hash = ''; // clear
@@ -268,12 +342,13 @@
           const title = await this.extractTitle(url);
           const vid = this.extractVideoId(url);
           const thumbnail = `https://img.youtube.com/vi/${vid}/maxresdefault.jpg`;
-          const recipe={id:Date.now().toString(),title:title||'제목을 가져올 수 없습니다',url,thumbnail,createdAt:new Date().toISOString(),views:0,favorite:false};
+          const tags=this.autoTags(title||'');
+          const recipe={id:Date.now().toString(),title:title||'제목을 가져올 수 없습니다',url,thumbnail,createdAt:new Date().toISOString(),views:0,favorite:false,tags};
           this.recipes.unshift(recipe);
           this.saveRecipes();
+          this.renderTagsBar();
           this.renderRecipes();
           this.updateTopViewed();
-          this.hideAddSection();
           this.openPlayer(recipe.id);
         }catch(e){
           console.error(e);
@@ -281,12 +356,6 @@
         }finally{
           location.hash=''; // clear
         }
-      }
-      hideAddSection(){
-        const add=document.getElementById('add-section');
-        const install=document.getElementById('install-prompt');
-        if(add) add.style.display='none';
-        if(install) install.style.display='none';
       }
       isValidYouTubeUrl(url){
         const patterns=[/^https?:\/\/(www\.)?youtube\.com\/shorts\/[\w-]+/,/^https?:\/\/(www\.)?youtube\.com\/watch\?v=[\w-]+/,/^https?:\/\/youtu\.be\/[\w-]+/];
@@ -313,7 +382,7 @@
       deleteRecipe(id){
         if(confirm('정말 이 레시피를 삭제하시겠습니까?')){
           this.recipes=this.recipes.filter(r=>r.id!==id);
-          this.saveRecipes();this.renderRecipes();this.updateTopViewed();
+          this.saveRecipes();this.renderTagsBar();this.renderRecipes();this.updateTopViewed();
         }
       }
       toggleFav(id){
@@ -326,18 +395,23 @@
       }
       searchRecipes(q){this.renderRecipes(q);}
       sortList(list){
-        // Favorites first, then by lastViewedAt desc, then createdAt desc
-        return list.sort((a,b)=>{
-          const fav = (b.favorite?1:0)-(a.favorite?1:0);
-          if(fav!==0) return fav;
-          const lv=(new Date(b.lastViewedAt||0)) - (new Date(a.lastViewedAt||0));
-          if(lv!==0) return lv;
-          return (new Date(b.createdAt||0)) - (new Date(a.createdAt||0));
-        });
+        const mode=this.sortMode;
+        if(mode==='most_viewed'){
+          return list.sort((a,b)=> (b.views||0)-(a.views||0) || (new Date(b.lastViewedAt||0))-(new Date(a.lastViewedAt||0)) || (new Date(b.createdAt||0))-(new Date(a.createdAt||0)));
+        }
+        if(mode==='favorites_first'){
+          return list.sort((a,b)=> (b.favorite?1:0)-(a.favorite?1:0) || (new Date(b.lastViewedAt||0))-(new Date(a.lastViewedAt||0)) || (new Date(b.createdAt||0))-(new Date(a.createdAt||0)));
+        }
+        // latest
+        return list.sort((a,b)=> (new Date(b.createdAt||0))-(new Date(a.createdAt||0)));
       }
       renderRecipes(searchQuery=''){
         let list=this.recipes.map(r=>({...r}));
         if(this.onlyFav) list=list.filter(r=>r.favorite);
+        // Tag filter (OR logic for selected tags)
+        if(this.selectedTags.size>0){
+          list=list.filter(r=> (r.tags||[]).some(t=> this.selectedTags.has(t)));
+        }
         if(searchQuery){
           const q=searchQuery.toLowerCase();
           list=list.filter(r=>r.title.toLowerCase().includes(q));
@@ -359,6 +433,7 @@
         const id=this.extractVideoId(r.url) || '';
         const favClass = r.favorite ? 'fav-btn active' : 'fav-btn';
         const favLabel = r.favorite ? '⭐' : '☆';
+        const tags = (r.tags||[]).map(t=>`<span class="tag-chip" style="pointer-events:none;border-color:#f1f5f9;background:#f8fafc">${'#'+t}</span>`).join(' ');
         return `
           <div class="recipe-card">
             <div class="recipe-thumbnail" onclick="app.openPlayer('${r.id}')">
@@ -369,6 +444,7 @@
             </div>
             <div class="recipe-content">
               <h3 class="recipe-title" title="${r.title}">${r.title}</h3>
+              <div style="margin:6px 0 10px 0;display:flex;gap:6px;flex-wrap:wrap">${tags}</div>
               <div class="recipe-date">저장일: ${date}${r.views?` · 재생 ${r.views}`:''}</div>
               <div class="recipe-actions">
                 <button class="watch-btn" onclick="app.openPlayer('${r.id}')">앱에서 보기</button>
@@ -451,65 +527,6 @@
           await navigator.clipboard.writeText(text);
           alert('링크가 클립보드에 복사되었습니다.');
         }
-      }
-
-      // ===== Backup / Restore =====
-      exportData(){
-        const data = JSON.stringify(this.recipes, null, 2);
-        const blob = new Blob([data], {type:'application/json'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `recipes-backup-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.json`;
-        document.body.appendChild(a);
-        a.click();
-        setTimeout(()=>{URL.revokeObjectURL(url);a.remove();}, 0);
-      }
-      importData(file){
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-          try{
-            const arr = JSON.parse(reader.result);
-            if(!Array.isArray(arr)) throw new Error('Invalid format');
-            const byVid = new Map();
-            for(const r of this.recipes){ byVid.set(this.extractVideoId(r.url), r); }
-            for(const it of arr){
-              const vid = this.extractVideoId(it.url||'');
-              if(!vid) continue;
-              if(byVid.has(vid)){
-                // merge simple fields (keep existing title/views/favorite if present)
-                const exist = byVid.get(vid);
-                exist.title = it.title || exist.title;
-                exist.thumbnail = it.thumbnail || exist.thumbnail;
-                exist.createdAt = exist.createdAt || it.createdAt || new Date().toISOString();
-                exist.views = Math.max(exist.views||0, it.views||0);
-                exist.favorite = Boolean(exist.favorite) || Boolean(it.favorite);
-                exist.lastViewedAt = (new Date(exist.lastViewedAt||0) > new Date(it.lastViewedAt||0)) ? exist.lastViewedAt : it.lastViewedAt;
-              }else{
-                byVid.set(vid, {
-                  id: Date.now().toString() + Math.random().toString(36).slice(2,7),
-                  title: it.title || `유튜브 레시피 (${vid})`,
-                  url: it.url,
-                  thumbnail: it.thumbnail || `https://img.youtube.com/vi/${vid}/maxresdefault.jpg`,
-                  createdAt: it.createdAt || new Date().toISOString(),
-                  views: it.views || 0,
-                  favorite: Boolean(it.favorite),
-                  lastViewedAt: it.lastViewedAt || null
-                });
-              }
-            }
-            this.recipes = Array.from(byVid.values()).sort((a,b)=> (new Date(b.createdAt))- (new Date(a.createdAt)));
-            this.saveRecipes();
-            this.renderRecipes(document.getElementById('search-input').value);
-            this.updateTopViewed();
-            alert('복원이 완료되었습니다.');
-          }catch(e){
-            console.error(e);
-            alert('가져오기 실패: JSON 형식이 올바르지 않습니다.');
-          }
-        };
-        reader.readAsText(file);
       }
 
       // ===== Storage =====
