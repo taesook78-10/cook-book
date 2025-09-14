@@ -1,6 +1,6 @@
 
-// v1.0.8 - cache bump for v9 (install label '앱 설치', footer buttons layout)
-const CACHE_NAME = 'youtube-recipe-v1.0.8';
+// v1.0.9 - cache bump for v10 (reduced paddings, top viewed title)
+const CACHE_NAME = 'youtube-recipe-v1.0.9';
 const urlsToCache = [
   './',
   './index.html',
