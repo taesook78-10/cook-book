@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="ko" data-version="v6">
+<html lang="ko" data-version="v7">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -38,9 +38,10 @@
 
     .search-section{margin-bottom:10px}
     .search-container{position:relative;max-width:650px;margin:0 auto}
-    .search-input{width:100%;padding:12px 48px 12px 14px;border:2px solid #e5e7eb;border-radius:50px;font-size:16px;transition:all .3s ease}
+    .search-input{width:100%;padding:12px 120px 12px 14px;border:2px solid #e5e7eb;border-radius:12px;font-size:16px;transition:all .3s ease}
     .search-input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
-    .clear-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:none;font-size:18px;cursor:pointer;color:#6b7280}
+    .clear-btn{position:absolute;right:86px;top:50%;transform:translateY(-50%);background:transparent;border:none;font-size:18px;cursor:pointer;color:#6b7280}
+    .search-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#111827;color:#fff;border:none;padding:9px 14px;border-radius:10px;cursor:pointer;font-weight:800}
 
     /* Top viewed one-line bar */
     .top-viewed{margin:8px 0 16px;padding:10px 14px;background:rgba(255,255,255,.55);border-radius:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#374151;font-weight:700}
@@ -66,9 +67,10 @@
     .share-btn{background:#f3f4f6;color:#111827;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700}
     .delete-btn{background:#f3f4f6;color:#6b7280;border:none;padding:10px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
     .delete-btn:hover{background:#ef4444;color:#fff}
+    .delete-btn.nohover:hover{background:#f3f4f6;color:#6b7280} /* cancel 후 즉시 원상복구 */
     .no-results{text-align:center;padding:36px 16px;color:#6b7280;font-size:1.05em}
 
-    /* Fullscreen Player View (screen only headerless) */
+    /* Fullscreen Player View */
     .player-view{position:fixed;inset:0;background:#000;color:#fff;z-index:50;display:none;flex-direction:column}
     .player-view.show{display:flex}
     .pv-body{flex:1;display:flex;align-items:center;justify-content:center;padding:0 0 env(safe-area-inset-bottom) 0}
@@ -77,16 +79,6 @@
     .pv-footer{display:flex;gap:10px;justify-content:center;padding:12px 16px env(safe-area-inset-right) 16px env(safe-area-inset-left);background:linear-gradient(to top,rgba(0,0,0,.7),rgba(0,0,0,.2))}
     .pv-btn{background:#111827;color:#fff;border:none;border-radius:999px;padding:10px 16px;font-weight:800;cursor:pointer}
     .pv-btn.secondary{background:#374151}
-
-    /* Install FAB (mobile-only visual) */
-    .install-fab{
-      position:fixed;right:16px;bottom:16px;width:64px;height:64px;border-radius:50%;
-      background:#111827;color:#fff;border:none;display:none;align-items:center;justify-content:center;
-      font-weight:900;letter-spacing:-0.5px;font-size:12px;line-height:1;text-align:center;
-      box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:60
-    }
-    .install-fab:active{transform:scale(0.98)}
-    @media (min-width:769px){ .install-fab{right:24px;bottom:24px} }
 
     @media (max-width:768px){
       body{padding:10px}
@@ -104,9 +96,6 @@
     </div>
 
     <div class="main-content">
-      <!-- Install FAB (hidden until install prompt is available) -->
-      <button id="install-fab" class="install-fab" aria-label="앱 설치">앱설치</button>
-
       <!-- Toolbar -->
       <div class="toolbar">
         <div class="left-tools">
@@ -116,6 +105,7 @@
             <option value="most_viewed">자주본순</option>
             <option value="favorites_first">즐겨찾기 우선</option>
           </select>
+          <button id="install-inline" class="tool-btn secondary" style="display:none">앱설치</button>
         </div>
       </div>
 
@@ -130,7 +120,6 @@
           <button id="add-btn" class="add-btn">추가</button>
         </div>
         <div id="loading" class="loading">⏳ 제목을 가져오는 중...</div>
-        <small style="color:#6b7280">주소 입력 후에도 입력창은 계속 보여집니다.</small>
       </div>
 
       <!-- 검색 섹션 -->
@@ -138,6 +127,7 @@
         <div class="search-container">
           <input type="text" id="search-input" class="search-input" placeholder="요리명으로 검색 (예: 김치, 된장, 전자레인지)">
           <button id="clear-btn" class="clear-btn" title="지우기">✕</button>
+          <button id="search-btn" class="search-btn">검색</button>
         </div>
       </div>
 
@@ -166,7 +156,7 @@
   </section>
 
   <script>
-    console.log('유튜브 레시피 loaded v6');
+    console.log('유튜브 레시피 loaded v7');
     class YouTubeRecipeApp{
       constructor(){
         this.recipes=this.loadRecipes();
@@ -206,7 +196,9 @@
         document.getElementById('add-btn').addEventListener('click',()=>{this.addRecipe()});
         document.getElementById('youtube-url').addEventListener('keypress',(e)=>{if(e.key==='Enter'){this.addRecipe()}});
         const searchInput=document.getElementById('search-input');
-        searchInput.addEventListener('input',(e)=>{this.searchRecipes(e.target.value)});
+        const doSearch=()=>{this.searchRecipes(searchInput.value)};
+        searchInput.addEventListener('input',doSearch);
+        document.getElementById('search-btn').addEventListener('click',doSearch);
         document.getElementById('clear-btn').addEventListener('click',()=>{searchInput.value='';this.renderRecipes();searchInput.focus()});
 
         const favBtn=document.getElementById('fav-filter');
@@ -323,10 +315,20 @@
           return `유튜브 레시피 (${id||'알 수 없음'})`;
         }
       }
-      deleteRecipe(id){
-        if(confirm('정말 이 레시피를 삭제하시겠습니까?')){
+      deleteRecipe(id, evt){
+        // 즉시 붉은색 hover가 유지되는 현상 방지 처리
+        const btn = evt && evt.currentTarget;
+        const confirmDelete = confirm('정말 이 레시피를 삭제하시겠습니까?');
+        if(confirmDelete){
           this.recipes=this.recipes.filter(r=>r.id!==id);
           this.saveRecipes();this.renderRecipes();this.updateTopViewed();
+        }else{
+          if(btn){
+            btn.classList.add('nohover');
+            btn.blur();
+            const off = ()=>{ btn.classList.remove('nohover'); btn.removeEventListener('mouseleave', off); };
+            btn.addEventListener('mouseleave', off, { once:true });
+          }
         }
       }
       toggleFav(id){
@@ -391,7 +393,7 @@
               <div class="recipe-actions">
                 <button class="yt-btn" onclick="app.openYouTube('${r.id}')">유튜브로 보기</button>
                 <button class="share-btn" onclick="app.shareRecipe('${r.id}')">공유</button>
-                <button class="delete-btn" onclick="app.deleteRecipe('${r.id}')" title="삭제">🧺</button>
+                <button class="delete-btn" onclick="app.deleteRecipe('${r.id}', event)" title="삭제">🗑️</button>
               </div>
             </div>
           </div>`;
@@ -487,20 +489,20 @@
       // ===== PWA =====
       setupPWA(){
         let deferredPrompt;
-        const fab=document.getElementById('install-fab');
+        const installBtn=document.getElementById('install-inline');
         window.addEventListener('beforeinstallprompt',(e)=>{
           e.preventDefault();
           deferredPrompt=e;
-          fab.style.display='flex';
+          installBtn.style.display='inline-flex';
         });
-        fab?.addEventListener('click',async()=>{
+        installBtn?.addEventListener('click',async()=>{
           if(!deferredPrompt) return;
           deferredPrompt.prompt();
           await deferredPrompt.userChoice;
           deferredPrompt=null;
-          fab.style.display='none';
+          installBtn.style.display='none';
         });
-        window.addEventListener('appinstalled',()=>{ fab.style.display='none'; });
+        window.addEventListener('appinstalled',()=>{ installBtn.style.display='none'; });
         if('serviceWorker' in navigator){
           window.addEventListener('load',()=>{
             navigator.serviceWorker.register('sw.js').catch(err=>console.log('SW registration failed',err));
