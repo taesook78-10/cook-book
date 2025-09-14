@@ -1,82 +1,112 @@
-
-// v1.0.4 - share target support + root icon paths + updated cache
-const CACHE_NAME = 'youtube-recipe-v1.0.4';
+const CACHE_NAME = 'youtube-recipe-bookmark-v1.0.0';
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json',
-  './icon-72x72.png',
-  './icon-96x96.png',
-  './icon-128x128.png',
-  './icon-144x144.png',
-  './icon-152x152.png',
-  './icon-192x192.png',
-  './icon-384x384.png',
-  './icon-512x512.png'
+  './icons/icon-72x72.png',
+  './icons/icon-96x96.png',
+  './icons/icon-128x128.png',
+  './icons/icon-144x144.png',
+  './icons/icon-152x152.png',
+  './icons/icon-192x192.png',
+  './icons/icon-384x384.png',
+  './icons/icon-512x512.png'
 ];
 
+// 설치 이벤트
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting())
+      .then((cache) => {
+        console.log('캐시 열림');
+        return cache.addAll(urlsToCache);
+      })
+      .then(() => {
+        console.log('모든 리소스가 캐시됨');
+        return self.skipWaiting();
+      })
   );
 });
 
+// 활성화 이벤트
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((names) =>
-      Promise.all(names.map((n) => (n !== CACHE_NAME ? caches.delete(n) : undefined)))
-    ).then(() => self.clients.claim())
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          // 이전 버전의 캐시 삭제
+          if (cacheName !== CACHE_NAME) {
+            console.log('이전 캐시 삭제:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
+      return self.clients.claim();
+    })
   );
 });
 
+// 네트워크 요청 가로채기
 self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Handle Web Share Target (POST to ?share-target)
-  if (request.method === 'POST' && url.searchParams.has('share-target')) {
-    event.respondWith((async () => {
-      try {
-        const formData = await request.formData();
-        const sharedUrl = formData.get('url') || '';
-        const sharedText = formData.get('text') || '';
-        const sharedTitle = formData.get('title') || '';
-        const payload = encodeURIComponent(sharedUrl || sharedText || sharedTitle || '');
-        // Redirect to app with #shared= payload
-        return Response.redirect(`./#shared=${payload}`, 303);
-      } catch (e) {
-        // Fallback to app shell
-        const cache = await caches.open(CACHE_NAME);
-        const shell = await cache.match('./index.html') || await fetch('./index.html');
-        return new Response(await shell.text(), { headers: { 'Content-Type': 'text/html' } });
-      }
-    })());
-    return;
-  }
-
-  if (request.method !== 'GET') return;
-
   event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) return cached;
-
-      return fetch(request).then((response) => {
-        try {
-          const isOk = response && response.status === 200;
-          const isBasic = response.type === 'basic';
-          if (isOk && isBasic) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
-          }
-        } catch (_) {}
-        return response;
-      }).catch(() => {
-        if (request.destination === 'document') {
-          return caches.match('./index.html');
+    caches.match(event.request)
+      .then((response) => {
+        // 캐시에서 찾으면 반환
+        if (response) {
+          return response;
         }
-      });
-    })
+
+        // 네트워크에서 가져오기
+        return fetch(event.request).then((response) => {
+          // 유효한 응답인지 확인
+          if (!response || response.status !== 200 || response.type !== 'basic') {
+            return response;
+          }
+
+          // 응답을 복제하여 캐시에 저장
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME)
+            .then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+
+          return response;
+        }).catch(() => {
+          // 네트워크 오류 시 오프라인 페이지 반환
+          if (event.request.destination === 'document') {
+            return caches.match('./index.html');
+          }
+        });
+      })
   );
+});
+
+// 백그라운드 동기화 (선택사항)
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'background-sync') {
+    console.log('백그라운드 동기화 실행');
+    // 여기에 오프라인에서 저장된 데이터를 서버로 동기화하는 로직 추가 가능
+  }
+});
+
+// 푸시 알림 (선택사항 - 나중에 확장 가능)
+self.addEventListener('push', (event) => {
+  if (event.data) {
+    const data = event.data.json();
+    const options = {
+      body: data.body || '새로운 레시피가 추가되었습니다!',
+      icon: './icon-192x192.png',
+      badge: './icon-72x72.png',
+      vibrate: [100, 50, 100],
+      data: {
+        dateOfArrival: Date.now(),
+        primaryKey: 1
+      }
+    };
+
+    event.waitUntil(
+      self.registration.showNotification(data.title || '내 레시피북', options)
+    );
+  }
 });

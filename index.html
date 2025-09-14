@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>유튜브 레시피</title>
+  <title>🍳 유튜브 레시피</title>
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#000000" />
   <meta name="description" content="유튜브 쇼츠 레시피를 간편하게 저장하고 검색하세요" />
@@ -42,12 +42,6 @@
     .search-input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
     .clear-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;border:none;font-size:18px;cursor:pointer;color:#6b7280}
 
-    /* Tags bar */
-    .tags-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 12px}
-    .tag-chip{border:1px solid #e5e7eb;background:#fff;color:#374151;padding:6px 10px;border-radius:999px;cursor:pointer;font-weight:700;font-size:.9em}
-    .tag-chip.active{background:#111827;color:#fff;border-color:#111827}
-    .tag-chip .count{opacity:.6;margin-left:.25rem}
-
     /* Top viewed one-line bar */
     .top-viewed{margin:8px 0 16px;padding:10px 14px;background:rgba(255,255,255,.55);border-radius:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#374151;font-weight:700}
     .top-viewed .sep{opacity:.6;margin:0 .5rem}
@@ -68,7 +62,8 @@
     .recipe-title{font-size:1.05em;font-weight:800;color:#1f2937;margin-bottom:8px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .recipe-date{color:#6b7280;font-size:13px;margin-bottom:12px}
     .recipe-actions{display:flex;gap:8px;align-items:center}
-    .watch-btn{flex:1;background:#111827;color:#fff;padding:10px 14px;border:none;border-radius:10px;cursor:pointer;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+    .yt-btn{flex:1;background:#111827;color:#fff;padding:10px 14px;border:none;border-radius:10px;cursor:pointer;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+    .share-btn{background:#f3f4f6;color:#111827;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700}
     .delete-btn{background:#f3f4f6;color:#6b7280;border:none;padding:10px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
     .delete-btn:hover{background:#ef4444;color:#fff}
     .no-results{text-align:center;padding:36px 16px;color:#6b7280;font-size:1.05em}
@@ -76,15 +71,23 @@
     /* Fullscreen Player View (mobile optimized) */
     .player-view{position:fixed;inset:0;background:#000;color:#fff;z-index:50;display:none;flex-direction:column}
     .player-view.show{display:flex}
-    .pv-header{display:flex;align-items:center;gap:8px;padding:14px 14px env(safe-area-inset-right) 14px env(safe-area-inset-left);background:linear-gradient(to bottom,rgba(0,0,0,.8),rgba(0,0,0,.2));backdrop-filter:blur(8px)}
-    .pv-back{background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:999px;padding:8px 12px;font-weight:800;cursor:pointer}
-    .pv-title{flex:1;font-weight:800;line-height:1.3}
+    /* removed header for screen-only view */
     .pv-body{flex:1;display:flex;align-items:center;justify-content:center;padding:0 0 env(safe-area-inset-bottom) 0}
     .pv-iframe-wrap{width:100%;max-width:900px;aspect-ratio:9/16;background:#000}
     .pv-iframe-wrap iframe{width:100%;height:100%;border:0}
     .pv-footer{display:flex;gap:10px;justify-content:center;padding:12px 16px env(safe-area-inset-right) 16px env(safe-area-inset-left);background:linear-gradient(to top,rgba(0,0,0,.7),rgba(0,0,0,.2))}
-    .pv-open{background:#ef4444;color:#fff;border:none;border-radius:999px;padding:10px 16px;font-weight:800;cursor:pointer}
-    .pv-share{background:#111827;color:#fff;border:none;border-radius:999px;padding:10px 16px;font-weight:800;cursor:pointer}
+    .pv-btn{background:#111827;color:#fff;border:none;border-radius:999px;padding:10px 16px;font-weight:800;cursor:pointer}
+    .pv-btn.secondary{background:#374151}
+
+    /* Install FAB (mobile-only visual) */
+    .install-fab{
+      position:fixed;right:16px;bottom:16px;width:64px;height:64px;border-radius:50%;
+      background:#111827;color:#fff;border:none;display:none;align-items:center;justify-content:center;
+      font-weight:900;letter-spacing:-0.5px;font-size:12px;line-height:1;text-align:center;
+      box-shadow:0 8px 20px rgba(0,0,0,.25);z-index:60
+    }
+    .install-fab:active{transform:scale(0.98)}
+    @media (min-width:769px){ .install-fab{right:24px;bottom:24px} }
 
     @media (max-width:768px){
       body{padding:10px}
@@ -97,15 +100,13 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>유튜브 레시피</h1>
-      <p>주소 추가 → 검색 → 영상 클릭(모바일 최적 화면)</p>
+      <h1>🍳 유튜브 레시피</h1>
+      <p>주소추가→ 검색→ 영상 클릭</p>
     </div>
 
     <div class="main-content">
-      <div id="install-prompt" class="install-prompt" style="display:none">
-        <div><strong>📱 앱 설치</strong><div>홈 화면에 추가해 더 빠르게 실행</div></div>
-        <button id="install-btn" class="tool-btn">설치</button>
-      </div>
+      <!-- Install FAB (hidden until install prompt is available) -->
+      <button id="install-fab" class="install-fab" aria-label="앱 설치">앱설치</button>
 
       <!-- Toolbar -->
       <div class="toolbar">
@@ -118,9 +119,6 @@
           </select>
         </div>
       </div>
-
-      <!-- Tags bar -->
-      <div id="tags-bar" class="tags-bar" aria-label="태그 필터"></div>
 
       <!-- Top 3 most viewed (one line, clickable, with counts) -->
       <div id="top-viewed" class="top-viewed" title=""></div>
@@ -154,20 +152,17 @@
     </div>
   </div>
 
-  <!-- Full-screen player view -->
+  <!-- Full-screen player view (no header/title) -->
   <section id="player-view" class="player-view" aria-hidden="true">
-    <div class="pv-header">
-      <button id="pv-back" class="pv-back">← 뒤로</button>
-      <div id="pv-title" class="pv-title"></div>
-    </div>
     <div class="pv-body">
       <div class="pv-iframe-wrap">
         <iframe id="pv-iframe" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
       </div>
     </div>
     <div class="pv-footer">
-      <button id="pv-open" class="pv-open">YouTube에서 열기</button>
-      <button id="pv-share" class="pv-share">공유</button>
+      <button id="pv-back" class="pv-btn">뒤로</button>
+      <button id="pv-fav" class="pv-btn secondary">☆ 즐겨찾기</button>
+      <button id="pv-share" class="pv-btn">공유</button>
     </div>
   </section>
 
@@ -175,26 +170,21 @@
     class YouTubeRecipeApp{
       constructor(){
         this.recipes=this.loadRecipes();
-        // 마이그레이션: 기존 레시피에 tags 필드가 없으면 자동 생성
-        for(const r of this.recipes){ if(!Array.isArray(r.tags)) r.tags = this.autoTags(r.title||''); }
-        this.current=null; // 현재 플레이 중인 recipe
+        for(const r of this.recipes){ if(!Array.isArray(r.tags)) r.tags = []; }
+        this.current=null;
         this.onlyFav=false;
         this.sortMode='latest';
-        this.selectedTags=new Set();
         this.init();
       }
       init(){
         this.setupEventListeners();
-        this.renderTagsBar();
         this.renderRecipes();
         this.updateTopViewed();
         this.setupPWA();
-        // Deep-link: #play=<id>
         if(location.hash.startsWith('#play=')){
           const id = location.hash.split('=')[1];
           if(id) setTimeout(()=>this.openPlayer(id), 0);
         }
-        // Share-target redirect: #shared=<url or text>
         if(location.hash.startsWith('#shared=')){
           const payload = decodeURIComponent(location.hash.slice('#shared='.length));
           setTimeout(()=>this.handleSharedPayload(payload), 0);
@@ -219,7 +209,6 @@
         searchInput.addEventListener('input',(e)=>{this.searchRecipes(e.target.value)});
         document.getElementById('clear-btn').addEventListener('click',()=>{searchInput.value='';this.renderRecipes();searchInput.focus()});
 
-        // Favorites filter
         const favBtn=document.getElementById('fav-filter');
         favBtn.addEventListener('click',()=>{
           this.onlyFav = !this.onlyFav;
@@ -228,77 +217,36 @@
           this.renderRecipes(searchInput.value);
         });
 
-        // Sort select
         const sortSel=document.getElementById('sort-select');
         sortSel.addEventListener('change',(e)=>{
           this.sortMode=e.target.value;
           this.renderRecipes(searchInput.value);
         });
 
-        // Player view controls
+        // Player footer buttons
         document.getElementById('pv-back').addEventListener('click',()=>this.closePlayer());
-        document.getElementById('pv-open').addEventListener('click',()=>{ if(this.current) window.open(this.current.url,'_blank') });
+        document.getElementById('pv-fav').addEventListener('click',()=>this.toggleFavCurrent());
         document.getElementById('pv-share').addEventListener('click',()=>this.shareCurrent());
       }
 
-      /* ========== 태그 ========== */
-      autoTags(title){
-        const t=(title||'').toLowerCase();
-        const tags=[];
-        const add=(x)=>{ if(!tags.includes(x)) tags.push(x); };
-        const has=(kw)=> t.includes(kw);
-        // 종류/조리법
-        if(/국|탕|찌개|라면|우동|수프/.test(title)) add('국물');
-        if(/볶음|볶다|stir|stir-fry|stir fry/.test(t)) add('볶음');
-        if(/찌다|찜|steam/.test(t)) add('찜');
-        if(/튀김|튀기|fry/.test(t)) add('튀김');
-        if(/구이|굽기|grill|oven/.test(t)) add('구이');
-        if(/전자레인지|전자렌지|microwave/.test(t)) add('전자레인지');
-        if(/에어프라이|에어프라|air ?fryer/.test(t)) add('에어프라이어');
-        if(/비건|채식|vegan|plant[- ]based/.test(t)) add('비건');
-        if(/초간단|간단|quick|easy|5분|5 min|5-minute/.test(t)) add('간단');
-        if(/매운|spicy|불닭|고추/.test(t)) add('매운맛');
-        // 재료
-        if(/김치/.test(title)) add('김치');
-        if(/돼지|삼겹|포크|pork/.test(t)) add('돼지고기');
-        if(/소고기|beef|안심|등심/.test(t)) add('소고기');
-        if(/닭|치킨|chicken/.test(t)) add('닭고기');
-        if(/계란|달걀|egg/.test(t)) add('계란');
-        if(/두부|tofu/.test(t)) add('두부');
-        if(/밥|덮밥|rice|비빔/.test(t)) add('밥');
-        if(/면|파스타|ramen|noodle|udon|spaghetti/.test(t)) add('면/파스타');
-        return tags;
+      // Card buttons
+      openYouTube(id){
+        const rec=this.recipes.find(r=>r.id===id);
+        if(rec) window.open(rec.url, '_blank');
       }
-      buildTagsIndex(){
-        const index=new Map();
-        for(const r of this.recipes){
-          for(const tag of (r.tags||[])){
-            index.set(tag, (index.get(tag)||0)+1);
-          }
+      async shareRecipe(id){
+        const rec=this.recipes.find(r=>r.id===id);
+        if(!rec) return;
+        const text = rec.title + "\n" + rec.url;
+        if(navigator.share){
+          try{ await navigator.share({title:rec.title, text:rec.title, url:rec.url}); }
+          catch(_){}
+        }else{
+          await navigator.clipboard.writeText(text);
+          alert('링크가 클립보드에 복사되었습니다.');
         }
-        return index;
-      }
-      renderTagsBar(){
-        const bar=document.getElementById('tags-bar');
-        const idx=this.buildTagsIndex();
-        const tags=Array.from(idx.keys()).sort((a,b)=>a.localeCompare(b,'ko'));
-        bar.innerHTML = tags.map(tag=>{
-          const active=this.selectedTags.has(tag);
-          return `<button class="tag-chip ${active?'active':''}" data-tag="${tag}" aria-pressed="${active}">#${tag}<span class="count">(${idx.get(tag)})</span></button>`;
-        }).join('');
-        // bind
-        bar.querySelectorAll('.tag-chip').forEach(btn=>{
-          btn.addEventListener('click',()=>{
-            const t=btn.getAttribute('data-tag');
-            if(this.selectedTags.has(t)){ this.selectedTags.delete(t); }
-            else{ this.selectedTags.add(t); }
-            this.renderTagsBar();
-            this.renderRecipes(document.getElementById('search-input').value);
-          });
-        });
       }
 
-      /* ========== 추가/삭제/즐겨찾기/검색/정렬/표시 ========== */
       async addRecipe(){
         const urlInput=document.getElementById('youtube-url');
         const addBtn=document.getElementById('add-btn');
@@ -313,14 +261,12 @@
           const title=await this.extractTitle(url);
           const videoId=this.extractVideoId(url);
           const thumbnail=`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-          const tags=this.autoTags(title||'');
-          const recipe={id:Date.now().toString(),title:title||'제목을 가져올 수 없습니다',url,thumbnail,createdAt:new Date().toISOString(),views:0,favorite:false,tags};
+          const recipe={id:Date.now().toString(),title:title||'제목을 가져올 수 없습니다',url,thumbnail,createdAt:new Date().toISOString(),views:0,favorite:false,tags:[]};
           this.recipes.unshift(recipe);
           this.saveRecipes();
-          this.renderTagsBar();
           this.renderRecipes();
           this.updateTopViewed();
-          urlInput.value=''; // 입력창 유지
+          urlInput.value='';
         }catch(err){
           console.error(err);
           alert('제목을 가져오는데 실패했습니다. 다시 시도해주세요.');
@@ -335,18 +281,16 @@
         if(this.recipes.some(r=>this.extractVideoId(r.url)===this.extractVideoId(url))){
           const exist = this.recipes.find(r=>this.extractVideoId(r.url)===this.extractVideoId(url));
           if(exist){ this.openPlayer(exist.id); }
-          location.hash = ''; // clear
+          location.hash = ''; 
           return;
         }
         try{
           const title = await this.extractTitle(url);
           const vid = this.extractVideoId(url);
           const thumbnail = `https://img.youtube.com/vi/${vid}/maxresdefault.jpg`;
-          const tags=this.autoTags(title||'');
-          const recipe={id:Date.now().toString(),title:title||'제목을 가져올 수 없습니다',url,thumbnail,createdAt:new Date().toISOString(),views:0,favorite:false,tags};
+          const recipe={id:Date.now().toString(),title:title||'제목을 가져올 수 없습니다',url,thumbnail,createdAt:new Date().toISOString(),views:0,favorite:false,tags:[]};
           this.recipes.unshift(recipe);
           this.saveRecipes();
-          this.renderTagsBar();
           this.renderRecipes();
           this.updateTopViewed();
           this.openPlayer(recipe.id);
@@ -354,7 +298,7 @@
           console.error(e);
           alert('공유된 링크를 추가하는 중 문제가 발생했습니다.');
         }finally{
-          location.hash=''; // clear
+          location.hash=''; 
         }
       }
       isValidYouTubeUrl(url){
@@ -382,7 +326,7 @@
       deleteRecipe(id){
         if(confirm('정말 이 레시피를 삭제하시겠습니까?')){
           this.recipes=this.recipes.filter(r=>r.id!==id);
-          this.saveRecipes();this.renderTagsBar();this.renderRecipes();this.updateTopViewed();
+          this.saveRecipes();this.renderRecipes();this.updateTopViewed();
         }
       }
       toggleFav(id){
@@ -392,6 +336,11 @@
         this.saveRecipes();
         this.renderRecipes(document.getElementById('search-input').value);
         this.updateTopViewed();
+        if(this.current && this.current.id===id){ this.syncPlayerFavBtn(); }
+      }
+      toggleFavCurrent(){
+        if(!this.current) return;
+        this.toggleFav(this.current.id);
       }
       searchRecipes(q){this.renderRecipes(q);}
       sortList(list){
@@ -402,16 +351,11 @@
         if(mode==='favorites_first'){
           return list.sort((a,b)=> (b.favorite?1:0)-(a.favorite?1:0) || (new Date(b.lastViewedAt||0))-(new Date(a.lastViewedAt||0)) || (new Date(b.createdAt||0))-(new Date(a.createdAt||0)));
         }
-        // latest
         return list.sort((a,b)=> (new Date(b.createdAt||0))-(new Date(a.createdAt||0)));
       }
       renderRecipes(searchQuery=''){
         let list=this.recipes.map(r=>({...r}));
         if(this.onlyFav) list=list.filter(r=>r.favorite);
-        // Tag filter (OR logic for selected tags)
-        if(this.selectedTags.size>0){
-          list=list.filter(r=> (r.tags||[]).some(t=> this.selectedTags.has(t)));
-        }
         if(searchQuery){
           const q=searchQuery.toLowerCase();
           list=list.filter(r=>r.title.toLowerCase().includes(q));
@@ -433,7 +377,6 @@
         const id=this.extractVideoId(r.url) || '';
         const favClass = r.favorite ? 'fav-btn active' : 'fav-btn';
         const favLabel = r.favorite ? '⭐' : '☆';
-        const tags = (r.tags||[]).map(t=>`<span class="tag-chip" style="pointer-events:none;border-color:#f1f5f9;background:#f8fafc">${'#'+t}</span>`).join(' ');
         return `
           <div class="recipe-card">
             <div class="recipe-thumbnail" onclick="app.openPlayer('${r.id}')">
@@ -444,11 +387,11 @@
             </div>
             <div class="recipe-content">
               <h3 class="recipe-title" title="${r.title}">${r.title}</h3>
-              <div style="margin:6px 0 10px 0;display:flex;gap:6px;flex-wrap:wrap">${tags}</div>
               <div class="recipe-date">저장일: ${date}${r.views?` · 재생 ${r.views}`:''}</div>
               <div class="recipe-actions">
-                <button class="watch-btn" onclick="app.openPlayer('${r.id}')">앱에서 보기</button>
-                <button class="delete-btn" onclick="app.deleteRecipe('${r.id}')" title="삭제">🗑️</button>
+                <button class="yt-btn" onclick="app.openYouTube('${r.id}')">유튜브로 보기</button>
+                <button class="share-btn" onclick="app.shareRecipe('${r.id}')">공유</button>
+                <button class="delete-btn" onclick="app.deleteRecipe('${r.id}')" title="삭제">🧺</button>
               </div>
             </div>
           </div>`;
@@ -485,7 +428,6 @@
       openPlayer(id){
         const rec=this.recipes.find(r=>r.id===id);
         if(!rec) return;
-        // 증가 및 기록
         rec.views = (rec.views || 0) + 1;
         rec.lastViewedAt = new Date().toISOString();
         this.saveRecipes();
@@ -493,17 +435,16 @@
 
         this.current=rec;
         const pv=document.getElementById('player-view');
-        const titleEl=document.getElementById('pv-title');
         const iframe=document.getElementById('pv-iframe');
         const vid=this.extractVideoId(rec.url);
         const embed = `https://www.youtube.com/embed/${vid}?autoplay=1&modestbranding=1&rel=0&playsinline=1`;
-        titleEl.textContent=rec.title;
         iframe.src=embed;
         pv.classList.add('show');
         pv.setAttribute('aria-hidden','false');
         history.pushState(null, '', '#play='+id);
         document.documentElement.style.overflow='hidden';
         document.body.style.overflow='hidden';
+        this.syncPlayerFavBtn();
       }
       closePlayer(){
         const pv=document.getElementById('player-view');
@@ -517,12 +458,18 @@
         document.documentElement.style.overflow='';
         document.body.style.overflow='';
       }
+      syncPlayerFavBtn(){
+        const btn=document.getElementById('pv-fav');
+        if(!btn || !this.current) return;
+        const isFav = !!this.current.favorite;
+        btn.textContent = (isFav ? '⭐ ' : '☆ ') + '즐겨찾기';
+      }
       async shareCurrent(){
         if(!this.current) return;
         const text = this.current.title + "\n" + this.current.url;
         if(navigator.share){
           try{ await navigator.share({title:this.current.title, text:this.current.title, url:this.current.url}); }
-          catch(_){ /* user canceled */ }
+          catch(_){}
         }else{
           await navigator.clipboard.writeText(text);
           alert('링크가 클립보드에 복사되었습니다.');
@@ -540,11 +487,20 @@
       // ===== PWA =====
       setupPWA(){
         let deferredPrompt;
-        const prompt=document.getElementById('install-prompt');
-        const btn=document.getElementById('install-btn');
-        window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();deferredPrompt=e;prompt.style.display='flex';});
-        btn?.addEventListener('click',async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;prompt.style.display='none';}});
-        window.addEventListener('appinstalled',()=>{prompt.style.display='none';});
+        const fab=document.getElementById('install-fab');
+        window.addEventListener('beforeinstallprompt',(e)=>{
+          e.preventDefault();
+          deferredPrompt=e;
+          fab.style.display='flex';
+        });
+        fab?.addEventListener('click',async()=>{
+          if(!deferredPrompt) return;
+          deferredPrompt.prompt();
+          await deferredPrompt.userChoice;
+          deferredPrompt=null;
+          fab.style.display='none';
+        });
+        window.addEventListener('appinstalled',()=>{ fab.style.display='none'; });
         if('serviceWorker' in navigator){
           window.addEventListener('load',()=>{
             navigator.serviceWorker.register('sw.js').catch(err=>console.log('SW registration failed',err));
