@@ -1,6 +1,6 @@
 
-// v1.0.9 - cache bump for v10 (reduced paddings, top viewed title)
-const CACHE_NAME = 'youtube-recipe-v1.0.9';
+// v1.0.10 - cache bump for v11 (always-visible install button + help modal)
+const CACHE_NAME = 'youtube-recipe-v1.0.10';
 const urlsToCache = [
   './',
   './index.html',
