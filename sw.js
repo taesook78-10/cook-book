@@ -1,6 +1,6 @@
 
-// v1.0.2 - root icon paths (no /icons folder)
-const CACHE_NAME = 'youtube-recipe-bookmark-v1.0.2';
+// v1.0.3 - share target support + root icon paths
+const CACHE_NAME = 'youtube-recipe-bookmark-v1.0.3';
 const urlsToCache = [
   './',
   './index.html',
@@ -33,6 +33,29 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+  const url = new URL(request.url);
+
+  // Handle Web Share Target (POST to ?share-target)
+  if (request.method === 'POST' && url.searchParams.has('share-target')) {
+    event.respondWith((async () => {
+      try {
+        const formData = await request.formData();
+        const sharedUrl = formData.get('url') || '';
+        const sharedText = formData.get('text') || '';
+        const sharedTitle = formData.get('title') || '';
+        const payload = encodeURIComponent(sharedUrl || sharedText || sharedTitle || '');
+        // Redirect to app with #shared= payload
+        return Response.redirect(`./#shared=${payload}`, 303);
+      } catch (e) {
+        // Fallback to app shell
+        const cache = await caches.open(CACHE_NAME);
+        const shell = await cache.match('./index.html') || await fetch('./index.html');
+        return new Response(await shell.text(), { headers: { 'Content-Type': 'text/html' } });
+      }
+    })());
+    return;
+  }
+
   if (request.method !== 'GET') return;
 
   event.respondWith(
