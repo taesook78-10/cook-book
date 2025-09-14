@@ -1,6 +1,6 @@
 
-// v1.0.6 - cache bump after toolbar install button & search UI updates
-const CACHE_NAME = 'youtube-recipe-v1.0.6';
+// v1.0.7 - cache bump for v8 changes (install label, tag search, layout)
+const CACHE_NAME = 'youtube-recipe-v1.0.7';
 const urlsToCache = [
   './',
   './index.html',

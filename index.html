@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="ko" data-version="v7">
+<html lang="ko" data-version="v8">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -36,7 +36,9 @@
     .tool-btn.toggled{box-shadow:inset 0 0 0 2px #111827}
     .sort-select{border:2px solid #e5e7eb;border-radius:999px;padding:8px 12px;background:#fff;font-weight:800}
 
-    .search-section{margin-bottom:10px}
+    /* Search section (styled like add-section) */
+    .search-section{background:linear-gradient(135deg,#f8fafc,#e2e8f0);border-radius:15px;padding:16px;margin-bottom:16px;border:1px solid #e2e8f0}
+    .search-title{margin-bottom:10px;color:#374151;font-weight:800}
     .search-container{position:relative;max-width:650px;margin:0 auto}
     .search-input{width:100%;padding:12px 120px 12px 14px;border:2px solid #e5e7eb;border-radius:12px;font-size:16px;transition:all .3s ease}
     .search-input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
@@ -52,7 +54,7 @@
     .views{color:var(--muted);font-weight:700;margin-left:.25rem}
 
     .recipes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
-    .recipe-card{background:#fff;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.1);overflow:hidden;transition:all .2s ease;border:1px solid #e5e7eb;position:relative}
+    .recipe-card{background:#fff;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.1);overflow:hidden;transition:all .2s.ease;border:1px solid #e5e7eb;position:relative}
     .recipe-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.15)}
     .recipe-thumbnail{width:100%;height:200px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:48px;position:relative;overflow:hidden}
     .recipe-thumbnail img{width:100%;height:100%;object-fit:cover}
@@ -67,7 +69,7 @@
     .share-btn{background:#f3f4f6;color:#111827;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700}
     .delete-btn{background:#f3f4f6;color:#6b7280;border:none;padding:10px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
     .delete-btn:hover{background:#ef4444;color:#fff}
-    .delete-btn.nohover:hover{background:#f3f4f6;color:#6b7280} /* cancel 후 즉시 원상복구 */
+    .delete-btn.nohover:hover{background:#f3f4f6;color:#6b7280}
     .no-results{text-align:center;padding:36px 16px;color:#6b7280;font-size:1.05em}
 
     /* Fullscreen Player View */
@@ -105,14 +107,11 @@
             <option value="most_viewed">자주본순</option>
             <option value="favorites_first">즐겨찾기 우선</option>
           </select>
-          <button id="install-inline" class="tool-btn secondary" style="display:none">앱설치</button>
+          <button id="install-inline" class="tool-btn secondary" style="display:none">홈화면 설치</button>
         </div>
       </div>
 
-      <!-- Top 3 most viewed (one line, clickable, with counts) -->
-      <div id="top-viewed" class="top-viewed" title=""></div>
-
-      <!-- 레시피 추가 섹션 (항상 유지) -->
+      <!-- 1) 유튜브 링크 추가 -->
       <div id="add-section" class="add-section">
         <h3 style="margin-bottom:10px;color:#374151">🔗 유튜브 링크 추가</h3>
         <div class="url-input-container">
@@ -122,20 +121,24 @@
         <div id="loading" class="loading">⏳ 제목을 가져오는 중...</div>
       </div>
 
-      <!-- 검색 섹션 -->
-      <div class="search-section">
+      <!-- 2) 레시피 검색 (동일 디자인) -->
+      <div class="search-section add-section">
+        <h3 class="search-title">🔎 레시피 검색</h3>
         <div class="search-container">
-          <input type="text" id="search-input" class="search-input" placeholder="요리명으로 검색 (예: 김치, 된장, 전자레인지)">
+          <input type="text" id="search-input" class="search-input" placeholder="요리명 또는 #태그로 검색 (예: 김치, #국물, #볶음)">
           <button id="clear-btn" class="clear-btn" title="지우기">✕</button>
           <button id="search-btn" class="search-btn">검색</button>
         </div>
       </div>
 
+      <!-- 3) Top 3 most viewed -->
+      <div id="top-viewed" class="top-viewed" title=""></div>
+
       <!-- 레시피 목록 -->
       <div id="recipes-container">
         <div id="recipes-grid" class="recipes-grid"></div>
         <div id="no-results" class="no-results" style="display:none">
-          결과가 없습니다. 다른 키워드로 검색해보세요.
+          결과가 없습니다. 다른 키워드나 #태그로 검색해보세요.
         </div>
       </div>
     </div>
@@ -156,14 +159,23 @@
   </section>
 
   <script>
-    console.log('유튜브 레시피 loaded v7');
+    console.log('유튜브 레시피 loaded v8');
     class YouTubeRecipeApp{
       constructor(){
         this.recipes=this.loadRecipes();
-        for(const r of this.recipes){ if(!Array.isArray(r.tags)) r.tags = []; }
         this.current=null;
         this.onlyFav=false;
         this.sortMode='latest';
+        // Backfill tags for old entries
+        let changed=false;
+        for(const r of this.recipes){
+          if(!Array.isArray(r.tags)) r.tags=[];
+          if(r.tags.length===0){
+            const g=this.generateTags(r.title||'');
+            if(g.length){ r.tags = g; changed = true; }
+          }
+        }
+        if(changed) this.saveRecipes();
         this.init();
       }
       init(){
@@ -221,6 +233,43 @@
         document.getElementById('pv-share').addEventListener('click',()=>this.shareCurrent());
       }
 
+      // ---- Tag generation (not displayed) ----
+      generateTags(title=''){
+        const t=(title||'').toLowerCase();
+        const pairs=[
+          [/국물|탕|전골|찌개|수프/, '국물'],
+          [/볶음|볶다|stir|stir-fry|stir fry/, '볶음'],
+          [/구이|grill|오븐/, '구이'],
+          [/튀김|에어프라이|에어프라이어|air ?fry/, '튀김'],
+          [/전자레인지|렌지|microwave/, '전자레인지'],
+          [/비건|채식|vegan/, '비건'],
+          [/간단|초간단|쉽게|5분|10분|퀵/, '간단'],
+          [/매운|매콤|spicy|매운맛/, '매운맛'],
+          [/김치/, '김치'],
+          [/돼지|삼겹|목살|pork/, '돼지고기'],
+          [/소고기|beef|등심|안심|차돌/, '소고기'],
+          [/닭|치킨|닭가슴|닭다리|chicken/, '닭고기'],
+          [/계란|달걀|egg/, '계란'],
+          [/두부|tofu/, '두부'],
+          [/밥|rice|비빔밥/, '밥'],
+          [/면|파스타|noodle|ramen|라면|국수|우동|파스타/, '면/파스타'],
+          [/찜|steam/, '찜'],
+          [/전|부침|jeon/, '부침/전'],
+          [/카레|커리|curry/, '카레'],
+          [/샐러드|salad/, '샐러드'],
+          [/떡볶이/, '떡볶이'],
+          [/야식|안주|술안주/, '술안주'],
+          [/도시락|런치박스|lunch/, '도시락'],
+          [/다이어트|저탄수|keto|단백질|protein/, '다이어트'],
+          [/디저트|베이킹|쿠키|케이크|빵|dessert|baking/, '디저트']
+        ];
+        const tags=[];
+        for(const [re,tag] of pairs){
+          if(re.test(t)) tags.push(tag);
+        }
+        return Array.from(new Set(tags));
+      }
+
       // Card buttons
       openYouTube(id){
         const rec=this.recipes.find(r=>r.id===id);
@@ -253,7 +302,14 @@
           const title=await this.extractTitle(url);
           const videoId=this.extractVideoId(url);
           const thumbnail=`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-          const recipe={id:Date.now().toString(),title:title||'제목을 가져올 수 없습니다',url,thumbnail,createdAt:new Date().toISOString(),views:0,favorite:false,tags:[]};
+          const recipe={
+            id:Date.now().toString(),
+            title:title||'제목을 가져올 수 없습니다',
+            url,thumbnail,
+            createdAt:new Date().toISOString(),
+            views:0,favorite:false,
+            tags:this.generateTags(title||'')
+          };
           this.recipes.unshift(recipe);
           this.saveRecipes();
           this.renderRecipes();
@@ -280,7 +336,11 @@
           const title = await this.extractTitle(url);
           const vid = this.extractVideoId(url);
           const thumbnail = `https://img.youtube.com/vi/${vid}/maxresdefault.jpg`;
-          const recipe={id:Date.now().toString(),title:title||'제목을 가져올 수 없습니다',url,thumbnail,createdAt:new Date().toISOString(),views:0,favorite:false,tags:[]};
+          const recipe={
+            id:Date.now().toString(),title:title||'제목을 가져올 수 없습니다',url,thumbnail,
+            createdAt:new Date().toISOString(),views:0,favorite:false,
+            tags:this.generateTags(title||'')
+          };
           this.recipes.unshift(recipe);
           this.saveRecipes();
           this.renderRecipes();
@@ -316,7 +376,6 @@
         }
       }
       deleteRecipe(id, evt){
-        // 즉시 붉은색 hover가 유지되는 현상 방지 처리
         const btn = evt && evt.currentTarget;
         const confirmDelete = confirm('정말 이 레시피를 삭제하시겠습니까?');
         if(confirmDelete){
@@ -344,6 +403,20 @@
         if(!this.current) return;
         this.toggleFav(this.current.id);
       }
+
+      // ---- Search (title + tags) ----
+      normalize(s){ return (s||'').toLowerCase().trim(); }
+      matchByQuery(r, q){
+        if(!q) return true;
+        const tokens = this.normalize(q).split(/[\s,]+/).filter(Boolean);
+        if(tokens.length===0) return true;
+        const title = this.normalize(r.title);
+        const tags = (r.tags||[]).map(x=>this.normalize(x));
+        return tokens.every(term => {
+          const t = term.startsWith('#') ? term.slice(1) : term;
+          return title.includes(t) || tags.some(tag => tag.includes(t));
+        });
+      }
       searchRecipes(q){this.renderRecipes(q);}
       sortList(list){
         const mode=this.sortMode;
@@ -359,8 +432,7 @@
         let list=this.recipes.map(r=>({...r}));
         if(this.onlyFav) list=list.filter(r=>r.favorite);
         if(searchQuery){
-          const q=searchQuery.toLowerCase();
-          list=list.filter(r=>r.title.toLowerCase().includes(q));
+          list=list.filter(r=>this.matchByQuery(r, searchQuery));
         }
         list=this.sortList(list);
 
