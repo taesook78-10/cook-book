@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-version="v6">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -68,10 +68,9 @@
     .delete-btn:hover{background:#ef4444;color:#fff}
     .no-results{text-align:center;padding:36px 16px;color:#6b7280;font-size:1.05em}
 
-    /* Fullscreen Player View (mobile optimized) */
+    /* Fullscreen Player View (screen only headerless) */
     .player-view{position:fixed;inset:0;background:#000;color:#fff;z-index:50;display:none;flex-direction:column}
     .player-view.show{display:flex}
-    /* removed header for screen-only view */
     .pv-body{flex:1;display:flex;align-items:center;justify-content:center;padding:0 0 env(safe-area-inset-bottom) 0}
     .pv-iframe-wrap{width:100%;max-width:900px;aspect-ratio:9/16;background:#000}
     .pv-iframe-wrap iframe{width:100%;height:100%;border:0}
@@ -167,6 +166,7 @@
   </section>
 
   <script>
+    console.log('유튜브 레시피 loaded v6');
     class YouTubeRecipeApp{
       constructor(){
         this.recipes=this.loadRecipes();
