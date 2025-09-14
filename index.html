@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="ko" data-version="v8">
+<html lang="ko" data-version="v9">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -11,7 +11,7 @@
   <link rel="icon" href="./icon-192x192.png" />
   <link rel="apple-touch-icon" href="./icon-192x192.png" />
   <style>
-    :root { --ink:#111827; --muted:#6b7280; --pri:#2563eb; --soft:#f1f5f9; }
+    :root { --ink:#111827; --muted:#6b7280; --pri:#2563eb; --soft:#f1f5f9; --fav:#374151; }
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,ui-rounded,'Noto Sans KR',sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;padding:20px}
     .container{max-width:1000px;margin:0 auto;background:rgba(255,255,255,.95);backdrop-filter:blur(15px);border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,.1);overflow:hidden}
@@ -54,7 +54,7 @@
     .views{color:var(--muted);font-weight:700;margin-left:.25rem}
 
     .recipes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
-    .recipe-card{background:#fff;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.1);overflow:hidden;transition:all .2s.ease;border:1px solid #e5e7eb;position:relative}
+    .recipe-card{background:#fff;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.1);overflow:hidden;transition:all .2s ease;border:1px solid #e2e8f0;position:relative}
     .recipe-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.15)}
     .recipe-thumbnail{width:100%;height:200px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:48px;position:relative;overflow:hidden}
     .recipe-thumbnail img{width:100%;height:100%;object-fit:cover}
@@ -78,15 +78,25 @@
     .pv-body{flex:1;display:flex;align-items:center;justify-content:center;padding:0 0 env(safe-area-inset-bottom) 0}
     .pv-iframe-wrap{width:100%;max-width:900px;aspect-ratio:9/16;background:#000}
     .pv-iframe-wrap iframe{width:100%;height:100%;border:0}
-    .pv-footer{display:flex;gap:10px;justify-content:center;padding:12px 16px env(safe-area-inset-right) 16px env(safe-area-inset-left);background:linear-gradient(to top,rgba(0,0,0,.7),rgba(0,0,0,.2))}
-    .pv-btn{background:#111827;color:#fff;border:none;border-radius:999px;padding:10px 16px;font-weight:800;cursor:pointer}
-    .pv-btn.secondary{background:#374151}
+    /* Footer moved up and larger buttons; unified color to --fav (#374151) */
+    .pv-footer{
+      position:absolute;left:0;right:0;
+      bottom:calc(env(safe-area-inset-bottom) + 28px);
+      display:flex;gap:12px;justify-content:center;
+      padding:0 16px;
+      background:linear-gradient(to top,rgba(0,0,0,.6),rgba(0,0,0,0));
+    }
+    .pv-btn{background:var(--fav);color:#fff;border:none;border-radius:999px;
+      padding:14px 20px;font-weight:900;cursor:pointer;font-size:16px}
+    .pv-btn:active{transform:scale(.98)}
 
     @media (max-width:768px){
       body{padding:10px}
       .header{padding:18px}
       .main-content{padding:16px}
       .recipes-grid{grid-template-columns:1fr}
+      .pv-btn{font-size:15px;padding:13px 18px}
+      .pv-footer{bottom:calc(env(safe-area-inset-bottom) + 24px)}
     }
   </style>
 </head>
@@ -107,7 +117,7 @@
             <option value="most_viewed">자주본순</option>
             <option value="favorites_first">즐겨찾기 우선</option>
           </select>
-          <button id="install-inline" class="tool-btn secondary" style="display:none">홈화면 설치</button>
+          <button id="install-inline" class="tool-btn secondary" style="display:none">앱 설치</button>
         </div>
       </div>
 
@@ -121,7 +131,7 @@
         <div id="loading" class="loading">⏳ 제목을 가져오는 중...</div>
       </div>
 
-      <!-- 2) 레시피 검색 (동일 디자인) -->
+      <!-- 2) 레시피 검색 -->
       <div class="search-section add-section">
         <h3 class="search-title">🔎 레시피 검색</h3>
         <div class="search-container">
@@ -153,20 +163,20 @@
     </div>
     <div class="pv-footer">
       <button id="pv-back" class="pv-btn">뒤로</button>
-      <button id="pv-fav" class="pv-btn secondary">☆ 즐겨찾기</button>
+      <button id="pv-fav" class="pv-btn">즐겨찾기</button>
       <button id="pv-share" class="pv-btn">공유</button>
     </div>
   </section>
 
   <script>
-    console.log('유튜브 레시피 loaded v8');
+    console.log('유튜브 레시피 loaded v9');
     class YouTubeRecipeApp{
       constructor(){
         this.recipes=this.loadRecipes();
         this.current=null;
         this.onlyFav=false;
         this.sortMode='latest';
-        // Backfill tags for old entries
+        // Fill tags if missing
         let changed=false;
         for(const r of this.recipes){
           if(!Array.isArray(r.tags)) r.tags=[];
@@ -233,7 +243,7 @@
         document.getElementById('pv-share').addEventListener('click',()=>this.shareCurrent());
       }
 
-      // ---- Tag generation (not displayed) ----
+      // ---- Tag generation ----
       generateTags(title=''){
         const t=(title||'').toLowerCase();
         const pairs=[
@@ -270,7 +280,7 @@
         return Array.from(new Set(tags));
       }
 
-      // Card buttons
+      // Card actions
       openYouTube(id){
         const rec=this.recipes.find(r=>r.id===id);
         if(rec) window.open(rec.url, '_blank');
@@ -535,8 +545,7 @@
       syncPlayerFavBtn(){
         const btn=document.getElementById('pv-fav');
         if(!btn || !this.current) return;
-        const isFav = !!this.current.favorite;
-        btn.textContent = (isFav ? '⭐ ' : '☆ ') + '즐겨찾기';
+        btn.textContent = (this.current?.favorite ? '⭐ ' : '☆ ') + '즐겨찾기';
       }
       async shareCurrent(){
         if(!this.current) return;
