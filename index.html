@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="ko" data-version="v12">
+<html lang="ko" data-version="v12.1">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -49,7 +49,8 @@
     .top-link{appearance:none;background:none;border:none;color:#111827;font-weight:800;cursor:pointer;padding:0;margin:0;display:inline;white-space:nowrap}
     .top-link:hover{text-decoration:underline}
     .top-link:focus{outline:2px solid #2563eb;outline-offset:2px;border-radius:4px}
-    .views{color:#6b7280;font-weight:700;margin-left:.25rem}
+    .views{color:var(--muted);font-weight:700;margin-left:.25rem}
+    .placeholder{opacity:.5}
     .recipes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
     .recipe-card{background:#fff;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.1);overflow:hidden;transition:all .2s ease;border:1px solid #e2e8f0;position:relative}
     .recipe-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.15)}
@@ -73,15 +74,8 @@
     .pv-body{flex:1;display:flex;align-items:center;justify-content:center;padding:0 0 env(safe-area-inset-bottom) 0}
     .pv-iframe-wrap{width:100%;max-width:900px;aspect-ratio:9/16;background:#000}
     .pv-iframe-wrap iframe{width:100%;height:100%;border:0}
-    .pv-footer{
-      position:absolute;left:0;right:0;
-      bottom:calc(env(safe-area-inset-bottom) + 28px);
-      display:flex;gap:12px;justify-content:center;
-      padding:0 16px;
-      background:linear-gradient(to top,rgba(0,0,0,.6),rgba(0,0,0,0));
-    }
-    .pv-btn{background:var(--fav);color:#fff;border:none;border-radius:999px;
-      padding:14px 20px;font-weight:900;cursor:pointer;font-size:16px}
+    .pv-footer{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 28px);display:flex;gap:12px;justify-content:center;padding:0 16px;background:linear-gradient(to top,rgba(0,0,0,.6),rgba(0,0,0,0))}
+    .pv-btn{background:var(--fav);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-weight:900;cursor:pointer;font-size:16px}
     .pv-btn:active{transform:scale(.98)}
     .install-mask{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);display:none;z-index:60}
     .install-mask.show{display:block}
@@ -183,7 +177,7 @@
     })();
   </script>
   <script>
-    console.log('유튜브 레시피 loaded v12');
+    console.log('유튜브 레시피 loaded v12.1');
     function supportsLocalStorage(){
       try{ var t='__t__'; localStorage.setItem(t,'1'); localStorage.removeItem(t); return true; }catch(e){ return false; }
     }
@@ -225,23 +219,40 @@
         document.getElementById('pv-fav').addEventListener('click',()=>this.toggleFavCurrent());
         document.getElementById('pv-share').addEventListener('click',()=>this.shareCurrent());
       }
+      // Tag generation same as v12
       generateTags(title){
         var t=(title||'').toLowerCase();
         var pairs=[[/국물|탕|전골|찌개|수프/,'국물'],[/볶음|볶다|stir|stir-fry|stir fry/,'볶음'],[/구이|grill|오븐/,'구이'],[/튀김|에어프라이|에어프라이어|air ?fry/,'튀김'],[/전자레인지|렌지|microwave/,'전자레인지'],[/비건|채식|vegan/,'비건'],[/간단|초간단|쉽게|5분|10분|퀵/,'간단'],[/매운|매콤|spicy|매운맛/,'매운맛'],[/김치/,'김치'],[/돼지|삼겹|목살|pork/,'돼지고기'],[/소고기|beef|등심|안심|차돌/,'소고기'],[/닭|치킨|닭가슴|닭다리|chicken/,'닭고기'],[/계란|달걀|egg/,'계란'],[/두부|tofu/,'두부'],[/밥|rice|비빔밥/,'밥'],[/면|파스타|noodle|ramen|라면|국수|우동|파스타/,'면/파스타'],[/찜|steam/,'찜'],[/전|부침|jeon/,'부침/전'],[/카레|커리|curry/,'카레'],[/샐러드|salad/,'샐러드'],[/떡볶이/,'떡볶이'],[/야식|안주|술안주/,'술안주'],[/도시락|런치박스|lunch/,'도시락'],[/다이어트|저탄수|keto|단백질|protein/,'다이어트'],[/디저트|베이킹|쿠키|케이크|빵|dessert|baking/,'디저트']];
         var tags=[], i; for(i=0;i<pairs.length;i++){ if(pairs[i][0].test(t)) tags.push(pairs[i][1]); }
         var out=[], j; for(j=0;j<tags.length;j++){ if(out.indexOf(tags[j])===-1) out.push(tags[j]); } return out;
       }
-      openYouTube(id){ var rec=this.recipes.find(r=>r.id===id); if(rec) window.open(rec.url,'_blank','noopener'); }
-      async shareRecipe(id){ var rec=this.recipes.find(r=>r.id===id); if(!rec) return; var text=rec.title+"\n"+rec.url;
+      // Count external open as a "view" too
+      openYouTube(id){
+        var rec=this.recipes.find(function(r){return r.id===id;});
+        if(rec){
+          rec.views=(rec.views||0)+1;
+          rec.lastViewedAt=new Date().toISOString();
+          this.saveRecipes(); this.updateTopViewed();
+          window.open(rec.url,'_blank','noopener');
+        }
+      }
+      async shareRecipe(id){
+        var rec=this.recipes.find(function(r){return r.id===id;});
+        if(!rec) return;
+        var text=rec.title+"\n"+rec.url;
         if(navigator.share){ try{ await navigator.share({title:rec.title,text:rec.title,url:rec.url}); }catch(_){}
-        }else{ try{ await navigator.clipboard.writeText(text); alert('링크가 클립보드에 복사되었습니다.'); }catch(_){}} }
+        }else{ try{ await navigator.clipboard.writeText(text); alert('링크가 클립보드에 복사되었습니다.'); }catch(_){ } }
+      }
       async addRecipe(){
         var urlInput=document.getElementById('youtube-url'); var addBtn=document.getElementById('add-btn'); var loading=document.getElementById('loading');
         var url=urlInput.value.trim(); if(!url){alert('유튜브 링크를 입력해주세요.');return;}
         if(!this.isValidYouTubeUrl(url)){alert('올바른 유튜브 링크가 아닙니다.');return;}
-        var newVid=this.extractVideoId(url); if(this.recipes.some(r=>this.extractVideoId(r.url)===newVid)){alert('이미 저장된 레시피입니다.');return;}
+        var newVid=this.extractVideoId(url); if(this.recipes.some((r)=>this.extractVideoId(r.url)===newVid)){alert('이미 저장된 레시피입니다.');return;}
         addBtn.disabled=true; loading.style.display='block';
-        try{ var title=await this.extractTitle(url); var videoId=this.extractVideoId(url); var thumbnail='https://img.youtube.com/vi/'+videoId+'/maxresdefault.jpg';
+        try{
+          var title=await this.extractTitle(url);
+          var videoId=this.extractVideoId(url);
+          var thumbnail='https://img.youtube.com/vi/'+videoId+'/maxresdefault.jpg';
           var recipe={id:Date.now().toString(), title:title||'제목을 가져올 수 없습니다', url:url, thumbnail:thumbnail, createdAt:new Date().toISOString(), views:0, favorite:false, tags:this.generateTags(title||'')};
           this.recipes.unshift(recipe); this.saveRecipes(); this.renderRecipes(); this.updateTopViewed(); urlInput.value='';
         }catch(err){ console.error(err); alert('제목을 가져오는데 실패했습니다. 다시 시도해주세요.'); }
@@ -251,34 +262,73 @@
         var m=(payload||'').match(/https?:\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)[\w-]+/i);
         if(!m){ alert('공유된 내용에서 유튜브 링크를 찾지 못했습니다.'); return; }
         var url=m[0];
-        if(this.recipes.some(r=>this.extractVideoId(r.url)===this.extractVideoId(url))){ var ex=this.recipes.find(r=>this.extractVideoId(r.url)===this.extractVideoId(url)); if(ex){ this.openPlayer(ex.id); } location.hash=''; return; }
-        try{ var title=await this.extractTitle(url); var vid=this.extractVideoId(url); var thumbnail='https://img.youtube.com/vi/'+vid+'/maxresdefault.jpg';
+        if(this.recipes.some((r)=>this.extractVideoId(r.url)===this.extractVideoId(url))){
+          var ex=this.recipes.find((r)=>this.extractVideoId(r.url)===this.extractVideoId(url));
+          if(ex){ this.openPlayer(ex.id); } location.hash=''; return;
+        }
+        try{
+          var title=await this.extractTitle(url);
+          var vid=this.extractVideoId(url);
+          var thumbnail='https://img.youtube.com/vi/'+vid+'/maxresdefault.jpg';
           var recipe={id:Date.now().toString(), title:title||'제목을 가져올 수 없습니다', url:url, thumbnail:thumbnail, createdAt:new Date().toISOString(), views:0, favorite:false, tags:this.generateTags(title||'')};
           this.recipes.unshift(recipe); this.saveRecipes(); this.renderRecipes(); this.updateTopViewed(); this.openPlayer(recipe.id);
-        }catch(e){ console.error(e); alert('공유된 링크를 추가하는 중 문제가 발생했습니다.'); } finally{ location.hash=''; }
+        }catch(e){ console.error(e); alert('공유된 링크를 추가하는 중 문제가 발생했습니다.'); }
+        finally{ location.hash=''; }
       }
       isValidYouTubeUrl(url){ var pats=[/^https?:\/\/(www\.)?youtube\.com\/shorts\/[\w-]+/,/^https?:\/\/(www\.)?youtube\.com\/watch\?v=[\w-]+/,/^https?:\/\/youtu\.be\/[\w-]+/]; return pats.some(function(p){return p.test(url);}); }
       extractVideoId(url){ var p=[/(?:youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/,/(?:youtube\.com\/watch\?v=)([a-zA-Z0-9_-]+)/,/(?:youtu\.be\/)([a-zA-Z0-9_-]+)/]; for(var i=0;i<p.length;i++){ var m=url.match(p[i]); if(m) return m[1]; } return null; }
       async extractTitle(url){ try{ var id=this.extractVideoId(url); if(!id) throw new Error('Invalid'); var r=await fetch('https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v='+id+'&format=json'); if(!r.ok) throw new Error('oEmbed failed'); var d=await r.json(); return d.title; }catch(_){ var id2=this.extractVideoId(url); return '유튜브 레시피 ('+(id2||'알 수 없음')+')'; } }
-      deleteRecipe(id,evt){ var btn=evt&&evt.currentTarget; var ok=confirm('정말 이 레시피를 삭제하시겠습니까?'); if(ok){ this.recipes=this.recipes.filter(r=>r.id!==id); this.saveRecipes(); this.renderRecipes(); this.updateTopViewed(); } else if(btn){ btn.classList.add('nohover'); btn.blur(); var off=function(){ btn.classList.remove('nohover'); btn.removeEventListener('mouseleave',off); }; btn.addEventListener('mouseleave',off,{once:true}); } }
+      deleteRecipe(id,evt){ var btn=evt&&evt.currentTarget; var ok=confirm('정말 이 레시피를 삭제하시겠습니까?'); if(ok){ this.recipes=this.recipes.filter(function(r){return r.id!==id;}); this.saveRecipes(); this.renderRecipes(); this.updateTopViewed(); } else if(btn){ btn.classList.add('nohover'); btn.blur(); var off=function(){ btn.classList.remove('nohover'); btn.removeEventListener('mouseleave',off); }; btn.addEventListener('mouseleave',off,{once:true}); } }
       toggleFav(id){ var r=this.recipes.find(function(x){return x.id===id;}); if(!r) return; r.favorite=!r.favorite; this.saveRecipes(); this.renderRecipes(document.getElementById('search-input').value); this.updateTopViewed(); if(this.current && this.current.id===id){ this.syncPlayerFavBtn(); } }
       toggleFavCurrent(){ if(!this.current) return; this.toggleFav(this.current.id); }
       normalize(s){ return (s||'').toLowerCase().trim(); }
       matchByQuery(r,q){ if(!q) return true; var tokens=this.normalize(q).split(/[\s,]+/).filter(Boolean); if(tokens.length===0) return true; var title=this.normalize(r.title); var tags=(r.tags||[]).map((x)=>this.normalize(x)); return tokens.every((term)=>{ var t=term.charAt(0)==='#'?term.slice(1):term; return title.indexOf(t)>-1 || tags.some((tag)=>tag.indexOf(t)>-1); }); }
       searchRecipes(q){ this.renderRecipes(q); }
-      sortList(list){ var m=this.sortMode; if(m==='most_viewed'){ return list.sort((a,b)=> (b.views||0)-(a.views||0) || (new Date(b.lastViewedAt||0))-(new Date(a.lastViewedAt||0)) || (new Date(b.createdAt||0))-(new Date(a.createdAt||0))); } if(m==='favorites_first'){ return list.sort((a,b)=> (a.favorite===b.favorite?0:(b.favorite?1:-1)) || (new Date(b.lastViewedAt||0))-(new Date(a.lastViewedAt||0)) || (new Date(b.createdAt||0))-(new Date(a.createdAt||0))); } return list.sort((a,b)=> (new Date(b.createdAt||0))-(new Date(a.createdAt||0))); }
-      renderRecipes(searchQuery){ if(searchQuery===undefined) searchQuery=''; var list=this.recipes.map(r=>({ ...r })); if(this.onlyFav) list=list.filter(r=>r.favorite); if(searchQuery) list=list.filter(r=>this.matchByQuery(r,searchQuery)); list=this.sortList(list);
+      sortList(list){ var m=this.sortMode; if(m==='most_viewed'){ return list.sort(function(a,b){ return (b.views||0)-(a.views||0) || (new Date(b.lastViewedAt||0))-(new Date(a.lastViewedAt||0)) || (new Date(b.createdAt||0))-(new Date(a.createdAt||0)); }); } if(m==='favorites_first'){ return list.sort(function(a,b){ return (a.favorite===b.favorite?0:(b.favorite?1:-1)) || (new Date(b.lastViewedAt||0))-(new Date(a.lastViewedAt||0)) || (new Date(b.createdAt||0))-(new Date(a.createdAt||0)); }); } return list.sort(function(a,b){ return (new Date(b.createdAt||0))-(new Date(a.createdAt||0)); }); }
+      renderRecipes(searchQuery){ if(searchQuery===undefined) searchQuery=''; var list=this.recipes.slice(); if(this.onlyFav) list=list.filter(function(r){return r.favorite;}); if(searchQuery) list=list.filter((r)=>this.matchByQuery(r,searchQuery)); list=this.sortList(list);
         var container=document.getElementById('recipes-grid'); var noResults=document.getElementById('no-results');
         if(list.length===0){ container.style.display='none'; noResults.style.display='block'; noResults.innerHTML=searchQuery?('"'+searchQuery+'"에 대한 결과가 없습니다.'):'저장된 레시피가 없습니다. 상단에서 주소를 추가해보세요.'; }
-        else{ container.style.display='grid'; noResults.style.display='none'; container.innerHTML=list.map(r=>this.createRecipeCard(r)).join(''); } }
+        else{ container.style.display='grid'; noResults.style.display='none'; var html=''; for(var i=0;i<list.length;i++){ html+=this.createRecipeCard(list[i]); } container.innerHTML=html; } }
       createRecipeCard(r){ var date=new Date(r.createdAt).toLocaleDateString('ko-KR'); var id=this.extractVideoId(r.url)||''; var favClass=r.favorite?'fav-btn active':'fav-btn'; var favLabel=r.favorite?'⭐':'☆';
         return '<div class="recipe-card"><div class="recipe-thumbnail" onclick="app.openPlayer(\''+r.id+'\')"><img src="'+r.thumbnail+'" alt="'+r.title+'" onerror="this.onerror=null; this.src=\'https://img.youtube.com/vi/'+id+'/hqdefault.jpg\';"><button class="'+favClass+'" onclick="event.stopPropagation(); app.toggleFav(\''+r.id+'\')" aria-pressed="'+r.favorite+'" type="button">'+favLabel+'</button><div class="play-overlay">▶ 재생</div></div><div class="recipe-content"><h3 class="recipe-title" title="'+r.title.replace(/"/g,'&quot;')+'">'+r.title+'</h3><div class="recipe-date">저장일: '+date+(r.views?(' · 재생 '+r.views):'')+'</div><div class="recipe-actions"><button class="yt-btn" onclick="app.openYouTube(\''+r.id+'\')" type="button">유튜브로 보기</button><button class="share-btn" onclick="app.shareRecipe(\''+r.id+'\')" type="button">공유</button><button class="delete-btn" onclick="app.deleteRecipe(\''+r.id+'\', event)" title="삭제" type="button">🗑️</button></div></div></div>'; }
       escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#039;'); }
-      updateTopViewed(){ var el=document.getElementById('top-viewed'); if(!el) return; var top=this.recipes.map(r=>({ ...r, views:r.views||0})).filter(r=>r.views>0).sort((a,b)=> (b.views-a.views) || (new Date(b.lastViewedAt||0)-new Date(a.lastViewedAt||0))).slice(0,3);
-        if(top.length===0){ el.innerHTML='<span>1)</span> <span class="sep">·</span> <span>2)</span> <span class="sep">·</span> <span>3)</span>'; el.title='재생 기록이 없습니다'; return; }
-        var parts=top.map((r,i)=>{ var title=this.escapeHtml(r.title); var count=r.views||0; return '<button class="top-link" onclick="app.openPlayer(\''+r.id+'\')" title="'+title+'">'+(i+1)+') '+title+' <span class="views">('+count+')</span></button>'; });
-        el.innerHTML=parts.join('<span class="sep">·</span>'); el.title=top.map((r,i)=> (i+1)+') '+r.title+' ('+(r.views||0)+')').join(' | '); }
-      openPlayer(id){ var rec=this.recipes.find(r=>r.id===id); if(!rec) return; rec.views=(rec.views||0)+1; rec.lastViewedAt=new Date().toISOString(); this.saveRecipes(); this.updateTopViewed(); this.current=rec;
+      // Top viewed: always 3 slots
+      updateTopViewed(){
+        var el=document.getElementById('top-viewed'); if(!el) return;
+        var list=this.recipes.slice();
+        // Only count items with at least 1 view
+        list=list.filter(function(r){ return (r.views||0)>0; });
+        list.sort(function(a,b){
+          var av=(a.views||0), bv=(b.views||0);
+          if(bv-av!==0) return bv-av;
+          var al=a.lastViewedAt?new Date(a.lastViewedAt).getTime():0;
+          var bl=b.lastViewedAt?new Date(b.lastViewedAt).getTime():0;
+          if(bl-al!==0) return bl-al;
+          var ac=a.createdAt?new Date(a.createdAt).getTime():0;
+          var bc=b.createdAt?new Date(b.createdAt).getTime():0;
+          return bc-ac;
+        });
+        var slots=[list[0]||null, list[1]||null, list[2]||null];
+        var html='';
+        for(var i=0;i<3;i++){
+          if(slots[i]){
+            var r=slots[i];
+            var title=this.escapeHtml(r.title);
+            var count=r.views||0;
+            html+='<button class="top-link" onclick="app.openPlayer(\''+r.id+'\')" title="'+title+'">'+(i+1)+') '+title+' <span class="views">('+count+')</span></button>';
+          }else{
+            html+='<span class="placeholder">'+(i+1)+')</span>';
+          }
+          if(i<2) html+='<span class="sep">·</span>';
+        }
+        el.innerHTML=html;
+        var tip='';
+        for(var j=0;j<3;j++){
+          if(slots[j]) tip+=(j+1)+') '+slots[j].title+' ('+(slots[j].views||0)+')'+(j<2?' | ':'');
+        }
+        el.title=tip || '재생 기록이 없습니다';
+      }
+      openPlayer(id){ var rec=this.recipes.find(function(r){return r.id===id;}); if(!rec) return; rec.views=(rec.views||0)+1; rec.lastViewedAt=new Date().toISOString(); this.saveRecipes(); this.updateTopViewed(); this.current=rec;
         var pv=document.getElementById('player-view'); var iframe=document.getElementById('pv-iframe'); var vid=this.extractVideoId(rec.url); var embed='https://www.youtube.com/embed/'+vid+'?autoplay=1&modestbranding=1&rel=0&playsinline=1';
         iframe.src=embed; pv.classList.add('show'); pv.setAttribute('aria-hidden','false'); history.pushState(null,'','#play='+id); document.documentElement.style.overflow='hidden'; document.body.style.overflow='hidden'; this.syncPlayerFavBtn(); }
       closePlayer(){ var pv=document.getElementById('player-view'); var iframe=document.getElementById('pv-iframe'); pv.classList.remove('show'); pv.setAttribute('aria-hidden','true'); iframe.src=''; if(location.hash.indexOf('#play=')===0){ history.pushState('', document.title, window.location.pathname + window.location.search); } document.documentElement.style.overflow=''; document.body.style.overflow=''; }

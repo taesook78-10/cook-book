@@ -1,6 +1,6 @@
 
-// v1.0.11 - cache bump for v12 (mobile compat fixes, remove optional chaining)
-const CACHE_NAME = 'youtube-recipe-v1.0.11';
+// v1.0.12 - cache bump for v12.1 (ranking fixes, external open counts, always 3 slots)
+const CACHE_NAME = 'youtube-recipe-v1.0.12';
 const urlsToCache = [
   './',
   './index.html',
@@ -59,7 +59,6 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(request).then((cached) => {
       if (cached) return cached;
-
       return fetch(request).then((response) => {
         try {
           const isOk = response && response.status === 200;
