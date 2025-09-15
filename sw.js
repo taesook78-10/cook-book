@@ -1,6 +1,6 @@
 
-// v1.0.12 - cache bump for v12.1 (ranking fixes, external open counts, always 3 slots)
-const CACHE_NAME = 'youtube-recipe-v1.0.12';
+// v1.0.13 - cache bump for v12.2 (top viewed flex slots fix)
+const CACHE_NAME = 'youtube-recipe-v1.0.13';
 const urlsToCache = [
   './',
   './index.html',

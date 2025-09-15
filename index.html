@@ -1,6 +1,6 @@
 
 <!DOCTYPE html>
-<html lang="ko" data-version="v12.1">
+<html lang="ko" data-version="v12.2">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -29,12 +29,14 @@
     .add-btn:hover{transform:translateY(-50%) translateY(-1px)}
     .add-btn:disabled{background:#9ca3af;cursor:not-allowed;transform:translateY(-50%)}
     .loading{display:none;text-align:center;color:#6b7280;margin-top:6px}
+
     .toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap}
     .left-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .tool-btn{background:#111827;color:#fff;border:none;border-radius:999px;padding:8px 12px;cursor:pointer;font-weight:800}
     .tool-btn.secondary{background:#e5e7eb;color:#111827}
     .tool-btn.toggled{box-shadow:inset 0 0 0 2px #111827}
     .sort-select{border:2px solid #e5e7eb;border-radius:999px;padding:8px 12px;background:#fff;font-weight:800}
+
     .search-section{background:linear-gradient(135deg,#f8fafc,#e2e8f0);border-radius:15px;padding:12px;margin-bottom:12px;border:1px solid #e2e8f0}
     .search-title{margin:0 0 8px 2px;color:#374151;font-weight:800;font-size:1rem}
     .search-container{position:relative;max-width:650px;margin:0 auto}
@@ -42,15 +44,24 @@
     .search-input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
     .clear-btn{position:absolute;right:84px;top:50%;transform:translateY(-50%);background:transparent;border:none;font-size:18px;cursor:pointer;color:#6b7280}
     .search-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:#111827;color:#fff;border:none;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:800}
+
+    /* Top viewed -> 3 equal slots with independent ellipsis */
     .top-viewed-wrap{margin:4px 0 14px}
     .top-viewed-title{font-weight:800;color:#374151;margin:0 0 6px 2px}
-    .top-viewed{padding:8px 12px;background:rgba(255,255,255,.55);border-radius:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#374151;font-weight:700}
-    .top-viewed .sep{opacity:.6;margin:0 .5rem}
-    .top-link{appearance:none;background:none;border:none;color:#111827;font-weight:800;cursor:pointer;padding:0;margin:0;display:inline;white-space:nowrap}
-    .top-link:hover{text-decoration:underline}
-    .top-link:focus{outline:2px solid #2563eb;outline-offset:2px;border-radius:4px}
-    .views{color:var(--muted);font-weight:700;margin-left:.25rem}
-    .placeholder{opacity:.5}
+    .top-viewed{
+      display:flex; gap:8px; align-items:center;
+      padding:8px 12px; background:rgba(255,255,255,.55); border-radius:12px;
+      overflow:hidden;
+    }
+    .top-link{
+      appearance:none; background:none; border:none; color:#111827; font-weight:800; cursor:pointer;
+      padding:0; margin:0; display:inline-flex; align-items:center; gap:6px;
+      flex:1 1 0; min-width:0;
+    }
+    .top-link .txt{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; }
+    .top-link .views{ color:var(--muted); font-weight:700; }
+    .top-link.placeholder{ cursor:default; opacity:.6 }
+
     .recipes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
     .recipe-card{background:#fff;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.1);overflow:hidden;transition:all .2s ease;border:1px solid #e2e8f0;position:relative}
     .recipe-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(0,0,0,.15)}
@@ -69,6 +80,7 @@
     .delete-btn:hover{background:#ef4444;color:#fff}
     .delete-btn.nohover:hover{background:#f3f4f6;color:#6b7280}
     .no-results{text-align:center;padding:36px 16px;color:#6b7280;font-size:1.05em}
+
     .player-view{position:fixed;inset:0;background:#000;color:#fff;z-index:50;display:none;flex-direction:column}
     .player-view.show{display:flex}
     .pv-body{flex:1;display:flex;align-items:center;justify-content:center;padding:0 0 env(safe-area-inset-bottom) 0}
@@ -77,6 +89,7 @@
     .pv-footer{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 28px);display:flex;gap:12px;justify-content:center;padding:0 16px;background:linear-gradient(to top,rgba(0,0,0,.6),rgba(0,0,0,0))}
     .pv-btn{background:var(--fav);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-weight:900;cursor:pointer;font-size:16px}
     .pv-btn:active{transform:scale(.98)}
+
     .install-mask{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);display:none;z-index:60}
     .install-mask.show{display:block}
     .install-card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(92vw,520px);background:#fff;border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,.25);padding:16px}
@@ -85,8 +98,10 @@
     .install-actions{display:flex;justify-content:flex-end;margin-top:12px}
     .btn{background:#111827;color:#fff;border:none;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}
     .btn.secondary{background:#e5e7eb;color:#111827}
+
     .err-banner{position:fixed;left:0;right:0;top:0;background:#fee2e2;color:#991b1b;padding:10px 14px;font-weight:800;z-index:1000;display:none}
     .err-banner.show{display:block}
+
     @media (max-width:768px){
       body{padding:10px}
       .header{padding:18px}
@@ -99,11 +114,13 @@
 </head>
 <body>
   <div id="err" class="err-banner"></div>
+
   <div class="container">
     <div class="header">
       <h1>🍳 유튜브 레시피</h1>
       <p>주소추가→ 검색→ 영상 클릭</p>
     </div>
+
     <div class="main-content">
       <div class="toolbar">
         <div class="left-tools">
@@ -116,6 +133,7 @@
           <button id="install-inline" class="tool-btn secondary" type="button">앱 설치</button>
         </div>
       </div>
+
       <div id="add-section" class="add-section">
         <h3 style="margin-bottom:8px;color:#374151">🔗 유튜브 링크 추가</h3>
         <div class="url-input-container">
@@ -124,6 +142,7 @@
         </div>
         <div id="loading" class="loading">⏳ 제목을 가져오는 중...</div>
       </div>
+
       <div class="search-section add-section">
         <h3 class="search-title">🔎 레시피 검색</h3>
         <div class="search-container">
@@ -132,10 +151,12 @@
           <button id="search-btn" class="search-btn" type="button">검색</button>
         </div>
       </div>
+
       <div class="top-viewed-wrap">
         <div class="top-viewed-title">최다 시청 순위</div>
         <div id="top-viewed" class="top-viewed" title=""></div>
       </div>
+
       <div id="recipes-container">
         <div id="recipes-grid" class="recipes-grid"></div>
         <div id="no-results" class="no-results" style="display:none">
@@ -144,6 +165,7 @@
       </div>
     </div>
   </div>
+
   <section id="player-view" class="player-view" aria-hidden="true">
     <div class="pv-body">
       <div class="pv-iframe-wrap">
@@ -156,6 +178,7 @@
       <button id="pv-share" class="pv-btn" type="button">공유</button>
     </div>
   </section>
+
   <div id="install-help" class="install-mask" role="dialog" aria-modal="true" aria-labelledby="install-title">
     <div class="install-card">
       <h3 id="install-title">앱 설치 안내</h3>
@@ -165,6 +188,7 @@
       </div>
     </div>
   </div>
+
   <script>
     (function(){
       window.addEventListener('error', function(e){
@@ -176,20 +200,15 @@
       });
     })();
   </script>
+
   <script>
-    console.log('유튜브 레시피 loaded v12.1');
-    function supportsLocalStorage(){
-      try{ var t='__t__'; localStorage.setItem(t,'1'); localStorage.removeItem(t); return true; }catch(e){ return false; }
-    }
+    console.log('유튜브 레시피 loaded v12.2');
+    function supportsLocalStorage(){ try{ var t='__t__'; localStorage.setItem(t,'1'); localStorage.removeItem(t); return true; }catch(e){ return false; } }
     class YouTubeRecipeApp{
       constructor(){
-        this.recipes=this.loadRecipes();
-        this.current=null; this.onlyFav=false; this.sortMode='latest'; this.deferredPrompt=null;
+        this.recipes=this.loadRecipes(); this.current=null; this.onlyFav=false; this.sortMode='latest'; this.deferredPrompt=null;
         var changed=false;
-        for(var i=0;i<this.recipes.length;i++){
-          var r=this.recipes[i]; if(!r.tags) r.tags=[];
-          if(r.tags.length===0){ var g=this.generateTags(r.title||''); if(g.length){ r.tags=g; changed=true; } }
-        }
+        for(var i=0;i<this.recipes.length;i++){ var r=this.recipes[i]; if(!r.tags) r.tags=[]; if(r.tags.length===0){ var g=this.generateTags(r.title||''); if(g.length){ r.tags=g; changed=true; } } }
         if(changed) this.saveRecipes();
         this.init();
       }
@@ -219,14 +238,12 @@
         document.getElementById('pv-fav').addEventListener('click',()=>this.toggleFavCurrent());
         document.getElementById('pv-share').addEventListener('click',()=>this.shareCurrent());
       }
-      // Tag generation same as v12
       generateTags(title){
         var t=(title||'').toLowerCase();
         var pairs=[[/국물|탕|전골|찌개|수프/,'국물'],[/볶음|볶다|stir|stir-fry|stir fry/,'볶음'],[/구이|grill|오븐/,'구이'],[/튀김|에어프라이|에어프라이어|air ?fry/,'튀김'],[/전자레인지|렌지|microwave/,'전자레인지'],[/비건|채식|vegan/,'비건'],[/간단|초간단|쉽게|5분|10분|퀵/,'간단'],[/매운|매콤|spicy|매운맛/,'매운맛'],[/김치/,'김치'],[/돼지|삼겹|목살|pork/,'돼지고기'],[/소고기|beef|등심|안심|차돌/,'소고기'],[/닭|치킨|닭가슴|닭다리|chicken/,'닭고기'],[/계란|달걀|egg/,'계란'],[/두부|tofu/,'두부'],[/밥|rice|비빔밥/,'밥'],[/면|파스타|noodle|ramen|라면|국수|우동|파스타/,'면/파스타'],[/찜|steam/,'찜'],[/전|부침|jeon/,'부침/전'],[/카레|커리|curry/,'카레'],[/샐러드|salad/,'샐러드'],[/떡볶이/,'떡볶이'],[/야식|안주|술안주/,'술안주'],[/도시락|런치박스|lunch/,'도시락'],[/다이어트|저탄수|keto|단백질|protein/,'다이어트'],[/디저트|베이킹|쿠키|케이크|빵|dessert|baking/,'디저트']];
         var tags=[], i; for(i=0;i<pairs.length;i++){ if(pairs[i][0].test(t)) tags.push(pairs[i][1]); }
         var out=[], j; for(j=0;j<tags.length;j++){ if(out.indexOf(tags[j])===-1) out.push(tags[j]); } return out;
       }
-      // Count external open as a "view" too
       openYouTube(id){
         var rec=this.recipes.find(function(r){return r.id===id;});
         if(rec){
@@ -282,7 +299,7 @@
       toggleFav(id){ var r=this.recipes.find(function(x){return x.id===id;}); if(!r) return; r.favorite=!r.favorite; this.saveRecipes(); this.renderRecipes(document.getElementById('search-input').value); this.updateTopViewed(); if(this.current && this.current.id===id){ this.syncPlayerFavBtn(); } }
       toggleFavCurrent(){ if(!this.current) return; this.toggleFav(this.current.id); }
       normalize(s){ return (s||'').toLowerCase().trim(); }
-      matchByQuery(r,q){ if(!q) return true; var tokens=this.normalize(q).split(/[\s,]+/).filter(Boolean); if(tokens.length===0) return true; var title=this.normalize(r.title); var tags=(r.tags||[]).map((x)=>this.normalize(x)); return tokens.every((term)=>{ var t=term.charAt(0)==='#'?term.slice(1):term; return title.indexOf(t)>-1 || tags.some((tag)=>tag.indexOf(t)>-1); }); }
+      matchByQuery(r,q){ if(!q) return true; var tokens=this.normalize(q).split(/[\s,]+/).filter(Boolean); if(tokens.length===0) return true; var title=this.normalize(r.title); var tags=(r.tags||[]).map(function(x){return (x||'').toLowerCase().trim();}); return tokens.every(function(term){ var t=term.charAt(0)==='#'?term.slice(1):term; return title.indexOf(t)>-1 || tags.some(function(tag){return tag.indexOf(t)>-1;}); }); }
       searchRecipes(q){ this.renderRecipes(q); }
       sortList(list){ var m=this.sortMode; if(m==='most_viewed'){ return list.sort(function(a,b){ return (b.views||0)-(a.views||0) || (new Date(b.lastViewedAt||0))-(new Date(a.lastViewedAt||0)) || (new Date(b.createdAt||0))-(new Date(a.createdAt||0)); }); } if(m==='favorites_first'){ return list.sort(function(a,b){ return (a.favorite===b.favorite?0:(b.favorite?1:-1)) || (new Date(b.lastViewedAt||0))-(new Date(a.lastViewedAt||0)) || (new Date(b.createdAt||0))-(new Date(a.createdAt||0)); }); } return list.sort(function(a,b){ return (new Date(b.createdAt||0))-(new Date(a.createdAt||0)); }); }
       renderRecipes(searchQuery){ if(searchQuery===undefined) searchQuery=''; var list=this.recipes.slice(); if(this.onlyFav) list=list.filter(function(r){return r.favorite;}); if(searchQuery) list=list.filter((r)=>this.matchByQuery(r,searchQuery)); list=this.sortList(list);
@@ -292,12 +309,9 @@
       createRecipeCard(r){ var date=new Date(r.createdAt).toLocaleDateString('ko-KR'); var id=this.extractVideoId(r.url)||''; var favClass=r.favorite?'fav-btn active':'fav-btn'; var favLabel=r.favorite?'⭐':'☆';
         return '<div class="recipe-card"><div class="recipe-thumbnail" onclick="app.openPlayer(\''+r.id+'\')"><img src="'+r.thumbnail+'" alt="'+r.title+'" onerror="this.onerror=null; this.src=\'https://img.youtube.com/vi/'+id+'/hqdefault.jpg\';"><button class="'+favClass+'" onclick="event.stopPropagation(); app.toggleFav(\''+r.id+'\')" aria-pressed="'+r.favorite+'" type="button">'+favLabel+'</button><div class="play-overlay">▶ 재생</div></div><div class="recipe-content"><h3 class="recipe-title" title="'+r.title.replace(/"/g,'&quot;')+'">'+r.title+'</h3><div class="recipe-date">저장일: '+date+(r.views?(' · 재생 '+r.views):'')+'</div><div class="recipe-actions"><button class="yt-btn" onclick="app.openYouTube(\''+r.id+'\')" type="button">유튜브로 보기</button><button class="share-btn" onclick="app.shareRecipe(\''+r.id+'\')" type="button">공유</button><button class="delete-btn" onclick="app.deleteRecipe(\''+r.id+'\', event)" title="삭제" type="button">🗑️</button></div></div></div>'; }
       escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#039;'); }
-      // Top viewed: always 3 slots
       updateTopViewed(){
         var el=document.getElementById('top-viewed'); if(!el) return;
-        var list=this.recipes.slice();
-        // Only count items with at least 1 view
-        list=list.filter(function(r){ return (r.views||0)>0; });
+        var list=this.recipes.slice().filter(function(r){ return (r.views||0)>0; });
         list.sort(function(a,b){
           var av=(a.views||0), bv=(b.views||0);
           if(bv-av!==0) return bv-av;
@@ -309,23 +323,18 @@
           return bc-ac;
         });
         var slots=[list[0]||null, list[1]||null, list[2]||null];
-        var html='';
-        for(var i=0;i<3;i++){
-          if(slots[i]){
-            var r=slots[i];
-            var title=this.escapeHtml(r.title);
-            var count=r.views||0;
-            html+='<button class="top-link" onclick="app.openPlayer(\''+r.id+'\')" title="'+title+'">'+(i+1)+') '+title+' <span class="views">('+count+')</span></button>';
+        function slotHtml(idx, rec, escape){
+          if(rec){
+            var title=escape(rec.title);
+            var count=rec.views||0;
+            return '<button class="top-link" onclick="app.openPlayer(\''+rec.id+'\')" title="'+title+'"><span class="rank">'+(idx)+')</span><span class="txt">'+title+'</span><span class="views">('+count+')</span></button>';
           }else{
-            html+='<span class="placeholder">'+(i+1)+')</span>';
+            return '<span class="top-link placeholder"><span class="rank">'+(idx)+')</span><span class="txt"></span></span>';
           }
-          if(i<2) html+='<span class="sep">·</span>';
         }
-        el.innerHTML=html;
+        el.innerHTML = slotHtml(1, slots[0], this.escapeHtml) + slotHtml(2, slots[1], this.escapeHtml) + slotHtml(3, slots[2], this.escapeHtml);
         var tip='';
-        for(var j=0;j<3;j++){
-          if(slots[j]) tip+=(j+1)+') '+slots[j].title+' ('+(slots[j].views||0)+')'+(j<2?' | ':'');
-        }
+        for(var j=0;j<3;j++){ if(slots[j]){ tip+=(j+1)+') '+slots[j].title+' ('+(slots[j].views||0)+')'+(j<2?' | ':''); } }
         el.title=tip || '재생 기록이 없습니다';
       }
       openPlayer(id){ var rec=this.recipes.find(function(r){return r.id===id;}); if(!rec) return; rec.views=(rec.views||0)+1; rec.lastViewedAt=new Date().toISOString(); this.saveRecipes(); this.updateTopViewed(); this.current=rec;
